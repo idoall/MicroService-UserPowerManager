@@ -1,0 +1,123 @@
+version: '3.6'
+# https://github.com/docker/docker.github.io/blob/master/compose/compose-file/compose-file-v2.md
+services:
+  consul:
+    command: -server -bootstrap -rejoin 
+    image: progrium/consul:latest
+    ports:
+      - "8300:8300"
+      - "8400:8400"
+      - "8500:8500"
+      - "8600:53/udp"
+  ##############################
+  # micro api
+  ##############################
+  microapi:
+    command: --registry_address=consul:8500 api --handler=api
+    image: microhq/micro:latest
+    links:
+      - consul
+    ports:
+      - "8080:8080"
+  ##############################
+  # micro web
+  ##############################
+  microweb:
+    command: --registry_address=consul:8500 web
+    image: microhq/micro:latest
+    links:
+      - consul
+    ports:
+      - "8082:8082"
+  ##############################
+  # jaeger
+  ##############################
+  jaeger:
+    image: jaegertracing/all-in-one:1.11
+    links:
+      - consul
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14268:14268"
+      - "14250:14250"
+      - "9411:9411"
+  ##############################
+  # apiusers
+  ##############################
+  apiusers:
+    build: ./api/apiusers
+    command: --registry_address=consul:8500
+    links:
+      - consul
+      - jaeger
+    environment:
+      - JAEGER_AGENTHOSTPORT=${JAEGER_AGENTHOSTPORT}
+    depends_on:
+      - microapi
+      - microweb
+      - srvusers
+      - srvhistoryuserlogin
+  ##############################
+  # srvusers
+  ##############################
+  srvusers:
+    build: ./srv/srvusers
+    command: --registry_address=consul:8500
+    environment:
+      - JAEGER_AGENTHOSTPORT=${JAEGER_AGENTHOSTPORT}
+      - DATABASE_SERVER_HOST=${DATABASE_SERVER_HOST}
+      - DATABASE_SERVER_PORT=${DATABASE_SERVER_PORT}
+      - DATABASE_SERVER_DBNAME=${DATABASE_SERVER_DBNAME}
+      - DATABASE_SERVER_USERNAME=${DATABASE_SERVER_USERNAME}
+      - DATABASE_SERVER_PASSWORD=${DATABASE_SERVER_PASSWORD}
+      - DATABASE_SERVER_CHARSET=${DATABASE_SERVER_CHARSET}
+    links:
+      - consul
+      - jaeger
+    depends_on:
+      - srvhistoryuserlogin
+  ##############################
+  # srvhistoryuserlogin
+  ##############################
+  srvhistoryuserlogin:
+    build: ./srv/srvhistoryuserlogin
+    command: --registry_address=consul:8500
+    environment:
+      - JAEGER_AGENTHOSTPORT=${JAEGER_AGENTHOSTPORT}
+      - DATABASE_SERVER_HOST=${DATABASE_SERVER_HOST}
+      - DATABASE_SERVER_PORT=${DATABASE_SERVER_PORT}
+      - DATABASE_SERVER_DBNAME=${DATABASE_SERVER_DBNAME}
+      - DATABASE_SERVER_USERNAME=${DATABASE_SERVER_USERNAME}
+      - DATABASE_SERVER_PASSWORD=${DATABASE_SERVER_PASSWORD}
+      - DATABASE_SERVER_CHARSET=${DATABASE_SERVER_CHARSET}
+    links:
+      - consul
+      - jaeger
+  ##############################
+  # beego web
+  ##############################
+  web:
+    build: ./web
+    command: --registry_address=consul:8500
+    ports:
+      - "18080:18080"
+    environment:
+      - MICROSERVICE_HOSTPORT=${MICROSERVICE_HOSTPORT}
+    links:
+      - apiusers
+    depends_on:
+      - jaeger
+      - apiusers
+  ##############################
+  # swagger
+  ##############################
+  swagger:
+    build: ./swagger
+    ports:
+      - "18081:8080"

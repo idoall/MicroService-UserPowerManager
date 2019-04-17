@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+// import public "google/protobuf/timestamp.proto"; 
+package SrvUsers;
+
+service SrvUsers {
+	// 添回用户
+	rpc Add(AddRequest) returns (AddResponse) {}
+	// 获取用户列表
+	rpc GetList(GetListRequest) returns (GetListResponse) {}
+	// 获取单个用户
+	rpc GetUser(GetUserRequest) returns (GetUserResponse) {}
+	// 修改用户信息
+	rpc Update(UpdateRequest) returns (UpdateResponse) {}
+	// 批量删除用户（假删除）
+	rpc BatchDelete(DeleteRequest) returns (DeleteResponse) {}
+}
+
+
+message User {
+	int64 Id = 1;
+	string UserName = 2;
+	string RealyName = 3;
+	string Password = 4;
+	string AuthKey = 5;
+	string Email = 6;
+	bool IsDel = 7;
+	string Note = 8;
+	int64 ParentId = 9;
+	int64 CreateTime = 10;
+	int64 LastUpdateTime = 11;
+}
+
+message AddRequest {
+	User Models = 1;
+}
+
+message AddResponse {
+	int64 NewUserId = 1;
+}
+
+message GetListRequest{
+	int64 PageSize = 1;
+	int64 CurrentPageIndex = 2;
+	string OrderBy = 3;
+}
+
+message GetListResponse{
+	int64 TotalCount = 1;
+	repeated User List = 2;
+}
+
+message GetUserRequest {
+	int64 UserId = 1;
+	string UserName = 2;
+}
+
+message GetUserResponse {
+	User Models = 1;
+}
+
+message UpdateRequest {
+	User Models = 1;
+}
+
+message UpdateResponse {
+	// 是否更新成功
+	int64 Updated = 1;
+}
+
+message DeleteRequest {
+	repeated string UserIdArray = 1;
+}
+
+message DeleteResponse {
+	// 是否删除成功,批量删除不需要返回值
+	int64 Deleted = 1;
+}

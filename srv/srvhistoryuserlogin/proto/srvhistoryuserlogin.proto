@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+import "github.com/idoall/MicroService-UserPowerManager/srv/srvusers/proto/srvusers.proto";
+
+package SrvHistoryUserLogin;
+
+service SrvHistoryUserLogin {
+	// 添回一条记录
+	rpc Add(AddRequest) returns (AddResponse) {}
+}
+
+
+message AddRequest {
+    SrvUsers.User User = 1;
+    string GeoRemoteAddr = 2;
+    string GeoCountry = 3;
+    string GeoCity = 4;
+    string DeviceDetector = 5;
+}
+
+message AddResponse {
+	int64 NewId = 1;
+}

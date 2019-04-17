@@ -1,0 +1,121 @@
+<div class="middle-box text-center loginscreen  animated fadeInDown">
+    <div>
+        <div>
+
+            <h1 class="logo-name">M+</h1>
+
+        </div>
+        <h3>欢迎使用 MSHK.TOP</h3>
+
+        <form class="m-t" role="form" method="POST">
+            <input type="hidden" value="{{.Referer}}" id="ID_Referer" name="ID_Referer">
+            <input type="hidden" id="geo_remote_addr" name="geo_remote_addr">
+            <input type="hidden" id="geo_country" name="geo_country">
+            <input type="hidden" id="geo_city" name="geo_city">
+            <div class="form-group">
+                <input type="text" id="username" name="username" class="form-control" placeholder="用户名" required="">
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" name="password" class="form-control" placeholder="密码" required="">
+            </div>
+            <button type="button" id="ID_Submit" class="btn btn-primary block full-width m-b">登 录</button>
+
+
+            <!-- <p class="text-muted text-center"> <a href="login.html#"><small>忘记密码了？</small></a> | <a href="register.html">注册一个新账号</a>
+            </p> -->
+
+        </form>
+    </div>
+</div>
+<script type="text/javascript">
+
+function FLogin() {
+    'use strict';
+    this.BtnSubmit = $("#ID_Submit");
+    this.InputUserName = $("#username");
+    this.InputPassWord = $("#password");
+    this.InputCountry = $("#geo_country");
+    this.InputCity = $("#geo_city");
+    this.InputRemoteAddr = $("#geo_remote_addr");
+    this.InputReferer = $("#ID_Referer");
+    // this.InputReCaptcha = $("#g-recaptcha-response");
+}
+FLogin.prototype.Init = function(){
+    var obj = CLogin;
+	// 点击事件 
+    obj.BtnSubmit.click(obj.Event_BtnSubmit_Onclick);
+    //
+    obj.InputPassWord.keydown(obj.Event_InputPassword_OnKeyDown);
+
+    // 获取用户所在国家、城市和IP
+    $.getJSON('http://gd.geobytes.com/GetCityDetails?callback=?', function(data) {
+        obj.InputRemoteAddr.val(data.geobytesremoteip);
+        obj.InputCountry.val(data.geobytescountry);
+        obj.InputCity.val(data.geobytescity);
+    });
+}
+
+/**
+ * 输入完密码，按回车提交事件
+*/
+FLogin.prototype.Event_InputPassword_OnKeyDown = function(e){
+    var obj = CLogin;
+    if (!e)
+        e = window.event;//火狐中是 window.event
+    if ((e.keyCode || e.which) == 13) {
+        obj.BtnSubmit.click();
+    }
+    
+}
+FLogin.prototype.Event_BtnSubmit_Onclick = function(){
+    var obj = CLogin;
+    
+    if(obj.InputUserName.val()=="" || obj.InputPassWord.val()==""){
+        swal({
+			title: "错误提示",
+			text: "用户名和密码不能为空。",
+			type:"error"
+        });
+        return
+    }
+    
+    var loading = layer.load(0, {
+        shade: [0.1,'#000']
+    });
+    var data = {
+        username:obj.InputUserName.val(),
+        password:obj.InputPassWord.val(),
+        device_detector:JSON.stringify($.fn.deviceDetector.getInfo()),
+        geo_remote_addr:obj.InputRemoteAddr.val(),
+        geo_country:obj.InputCountry.val(),
+        geo_city:obj.InputCity.val(),
+        recaptcha: $("#g-recaptcha-response").val(),
+    };
+    $.ajax({
+        url: '{{.URL_CheckLogin}}',
+        data: data,
+        type: 'post',
+        cache: false,
+        dataType: 'json',
+        success: function (data) {
+            if(data.code!=0){
+                layer.close(loading);
+                swal("错误提示",data.msg);
+            }else{
+                window.location.href = obj.InputReferer.val();
+            }
+        },
+        error: function () { console.log('异常请求') }
+    });
+}
+
+/**
+ * 页面初始化
+*/
+$(document).ready(function () {
+	if (typeof window.CLogin == 'undefined') {
+		window.CLogin = new FLogin();
+		CLogin.Init()
+	}
+});
+</script>
