@@ -1,0 +1,374 @@
+swagger: "2.0"
+info:
+  description: "调用 go-micro api 接口文档
+
+兼容 swagger 2.0 的注释规范"
+  version: "1.0.0"
+  title: "用户管理 API"
+  termsOfService: "there are no TOS at this moment, use at your own risk we take no responsibility"
+  contact:
+    email: "lion@mshk.top"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost:8080"
+basePath: "/mshk/api/v1"
+tags:
+- name: "users"
+  description: "用户管理"
+  externalDocs:
+    description: "Find out more"
+    url: "http://mshk.top"
+schemes:
+- "https"
+- "http"
+produces:
+- "application/json"
+paths:
+  /ApiUsers/add:
+    post:
+      tags:
+      - "users"
+      summary: "添加一个用户"
+      description: "调用 go-micro 的 api 服务添加用户"
+      operationId: "addPet"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+      - in: "formData"
+        name: "UserName"
+        type: "string"
+        description: "用户名"
+        required: true
+      - in: "formData"
+        name: "PassWord"
+        type: "string"
+        description: "密码"
+        required: true
+      - in: "formData"
+        name: "Email"
+        type: "string"
+        description: "Email"
+        required: true
+      - in: "formData"
+        name: "RealyName"
+        type: "string"
+        description: "真实姓名或昵称"
+      - in: "formData"
+        name: "Note"
+        type: "string"
+        description: "备注"
+      responses:
+        500:
+          description: "服务器错误"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+        200:
+          description: 返回新用户的Id
+          schema:
+            type: object
+            properties:
+              NewUserId:
+                type: integer
+                description: 新用户的Id.
+  /ApiUsers/batchDelete:
+    post:
+      tags:
+      - "users"
+      summary: "批量删除用户信息户"
+      description: "调用 go-micro 的 api 服务批量删除用户信息"
+      operationId: "batchDelete"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+      - in: "formData"
+        name: "UserIds"
+        type: "array"
+        description: "用逗号分隔的Id列表"
+        required: true
+        items:
+          type: "integer"
+          multipleOf: 10
+      responses:
+        500:
+          description: "服务器错误"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+        200:
+          description: 是否删除成功，0未成功，1成功
+          schema:
+            type: object
+            properties:
+              Deleted:
+                type: integer
+                description: 0或1.
+  /ApiUsers/getList:
+    get:
+      tags:
+      - "users"
+      summary: "获取用户列表,默认 id 倒排序"
+      description: "调用 go-micro 的 api 服务，获取用户列表,默认 id 倒排序"
+      operationId: "getList"
+      consumes:
+      - "application/html"
+      parameters:
+      - in: "query"
+        name: "PageSize"
+        required: true
+        type: "integer"
+        format: "int64"
+        description: "要获取的每页大小"
+      - in: "query"
+        name: "CurrentPageIndex"
+        required: true
+        type: "integer"
+        format: "int64"
+        description: "当前页的索引值"
+      - in: "query"
+        name: "OrderBy"
+        type: "string"
+        description: "排序方式，默认是id倒排序，参数值为`-id`"
+      responses:
+        500:
+          description: "服务器错误"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+        200:
+          description: "返回用户的实例"
+          schema:
+            $ref: "#/definitions/User"
+  /ApiUsers/getUser:
+    get:
+      tags:
+      - "users"
+      summary: "获取单个用户，根据Id或用户名"
+      description: "调用 go-micro 的 api 服务，获取单个用户，根据Id或用户名"
+      operationId: "getUser"
+      consumes:
+      - "application/html"
+      parameters:
+      - in: "query"
+        name: "UserId"
+        type: "integer"
+        format: "int64"
+        description: "用户Id"
+      - in: "query"
+        name: "UserName"
+        type: "integer"
+        format: "int64"
+        description: "用户名"
+      responses:
+        200:
+          description: "返回用户的实例"
+          schema:
+            $ref: "#/definitions/User"
+        500:
+          description: "服务器错误"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+  /ApiUsers/update:
+    post:
+      tags:
+      - "users"
+      summary: "获取单个用户，根据Id或用户名"
+      description: "调用 go-micro 的 api 服务，获取单个用户，根据Id或用户名"
+      operationId: "update"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+      - in: "formData"
+        name: "UserId"
+        type: "integer"
+        format: "int64"
+        required: true
+        description: "用户Id"
+      - in: "query"
+        name: "UserName"
+        type: "integer"
+        format: "int64"
+        required: true
+        description: "用户名"
+      - in: "query"
+        name: "PassWord"
+        type: "integer"
+        format: "int64"
+        required: true
+        description: "密码"
+      - in: "query"
+        name: "Email"
+        type: "integer"
+        format: "int64"
+        required: true
+        description: "用户的Email"
+      - in: "query"
+        name: "RealyName"
+        type: "integer"
+        format: "int64"
+        description: "真实姓名或昵称"
+      - in: "query"
+        name: "Note"
+        type: "integer"
+        format: "int64"
+        description: "备注"
+      responses:
+        200:
+          description: 是否操作成功
+          schema:
+            type: object
+            properties:
+              Updated:
+                type: integer
+                description: 是否操作成功，0失败，1成功.
+        500:
+          description: "服务器错误"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+  /ApiUsers/userLogin:
+    post:
+      tags:
+      - "users"
+      summary: "用户登录"
+      description: "调用 go-micro 的 api 服务，用户登录"
+      operationId: "userLogin"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+      - in: "formData"
+        name: "UserName"
+        type: "integer"
+        format: "int64"
+        required: true
+        description: "用户名"
+      - in: "formData"
+        name: "PassWord"
+        type: "integer"
+        format: "int64"
+        required: true
+        description: "密码"
+      - in: "formData"
+        name: "DeviceDetector"
+        type: "string"
+        required: true
+        description: "设备信息"
+      - in: "formData"
+        name: "GeoRemoteAddr"
+        type: "string"
+        required: true
+        description: "用户的IP地址"
+      - in: "formData"
+        name: "GeoCountry"
+        type: "string"
+        required: true
+        description: "用户所在国家"
+      - in: "formData"
+        name: "GeoCity"
+        type: "string"
+        required: true
+        description: "用户所在城市"
+      responses:
+        200:
+          description: 是否操作成功
+          schema:
+            type: object
+            properties:
+              TokenString:
+                type: string
+                description: 经过加密的用户Token.
+        500:
+          description: "服务器错误"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+  /ApiUsers/validToken:
+    post:
+      tags:
+      - "users"
+      summary: "验证 Token"
+      description: "调用 go-micro 的 api 服务，验证 Token"
+      operationId: "validToken"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+      - in: "formData"
+        name: "Token"
+        type: "string"
+        required: true
+        description: "要验证的Token"
+      - in: "formData"
+        name: "UpdateExpirationDate"
+        type: "integer"
+        description: "验证成功后，是否更新Token的过期时间，0表示false，1表示true"
+      responses:
+        200:
+          description: 验证成功
+          schema:
+            type: object
+            properties:
+              Vaild:
+                type: integer
+                description: 是否验证通过，0表示false，1表示true.
+              TokenString:
+                type: string
+                description: 经过加密的用户Token,如果没有设置`UpdateExpirationDate`参数，会返回原Token.
+        500:
+          description: "服务器错误"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+
+definitions:
+  User:
+    type: "object"
+    properties:
+      Id:
+        type: "integer"
+        format: "int64"
+        description: "用户Id"
+      UserName:
+        type: "string"
+        description: "用户名称"
+      RealyName:
+        type: "string"
+        description: "用户的真实姓名或昵称"
+      Password:
+        type: "string"
+        format: "password"
+        description: "用户的密码"
+      AuthKey:
+        type: "string"
+      Email:
+        type: "string"
+        format: "email"
+        description: "用户的Email地址"
+        example: "user@provider.net"
+      Note:
+        type: "string"
+        description: "备注"
+      CreateTime:
+        type: "string"
+        format: "date-time"
+        description: "创建时间"
+      LastUpdateTime:
+        type: "string"
+        format: "date-time"
+        description: "最后修改时间"
+    required:
+    - Id
+    - UserName
+    - Password
+    - Email
+  InternalServerError:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        description: "微服务Id"
+      code:
+        type: "integer"
+        format: "int64"
+        description: "Http.Response响应码 500"
+      Detail:
+        type: "string"
+      Status:
+        type: "string"
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"

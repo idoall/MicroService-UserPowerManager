@@ -1,0 +1,52 @@
+<div class="wrapper wrapper-content animated fadeInRight">
+
+    <div class="row">
+
+            <div class="col-sm-12">
+                    <div class="ibox float-e-margins">
+                            <div class="ibox-title">
+                                    <h5>{{.title}}</h5>
+                            </div>
+                            <div class="ibox-content">
+                                    <form class="form-horizontal m-t" id="signupForm" action="{{.UpdateSaveUrl}}" method="post">
+                                        <input type="hidden" value="{{.Model.Models.Id}}" name="userid" id="userid" />
+                                        <div class="form-group">
+                                                <label class="col-sm-3 control-label">用户名：</label>
+                                                <div class="col-sm-8">
+                                                        <input id="username" name="username" class="form-control" type="text" value="{{.Model.Models.UserName}}" placeholder="用户名" required="">
+                                                </div>
+                                        </div>
+                                        <div class="form-group">
+                                                <label class="col-sm-3 control-label">密码：</label>
+                                                <div class="col-sm-8">
+                                                    <input id="password" name="password" class="form-control" type="text" value="">
+                                                    <span class="help-block m-b-none"><i class="fa fa-info-circle"></i>如果要修改密码，请直接输入。</span>
+                                                </div>
+                                                
+                                        </div>
+                                        <div class="form-group">
+                                                <label class="col-sm-3 control-label">Email：</label>
+                                                <div class="col-sm-8">
+                                                    <input id="email" name="email" class="form-control" type="text" value="{{.Model.Models.Email}}" placeholder="Email" required="">
+                                                </div>
+                                        </div>
+                                        <div class="form-group">
+                                                <label class="col-sm-3 control-label">Note：</label>
+                                                <div class="col-sm-8">
+                                                    <textarea rows="5" id="note" class="form-control" name="note">{{.Model.Models.Note}}</textarea>
+                                                </div>
+                                        </div>
+
+
+                                            <div class="form-group">
+                                                    <div class="col-sm-8 col-sm-offset-3">
+                                                            <button class="btn btn-primary" type="submit">提交</button>
+                                                    </div>
+                                            </div>
+                                    </form>
+                            </div>
+                    </div>
+            </div>
+    </div>
+
+</div>

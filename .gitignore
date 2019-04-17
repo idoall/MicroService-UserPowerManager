@@ -1,0 +1,10 @@
+*.log
+logs
+logs/*
+main
+userpowermanager
+*.bak
+web/mshk.web
+api/apiusers/mshk.apiusers
+srv/srvusers/mshk.srvusers
+srv/srvhistoryuserlogin/mshk.srvhistoryuserlogin
