@@ -25,3 +25,5 @@ require (
 	github.com/uber/jaeger-client-go v2.16.0+incompatible
 	github.com/uber/jaeger-lib v2.0.0+incompatible // indirect
 )
+
+replace go.etcd.io/etcd v3.3.12+incompatible => github.com/etcd-io/etcd v3.3.12+incompatible
