@@ -14,19 +14,11 @@ import (
 	"github.com/idoall/MicroService-UserPowerManager/web/models"
 )
 
-// Result struct
-type Result struct {
-	Code  int    `json:"code"`
-	Title string `json:"title"`
-	Msg   string `json:"msg"`
-}
-
 // UsersController Controller
 type UsersController struct {
 	admin.AdminBaseController
 }
 
-// var BaseURL = "admin/users"
 var TemplageBaseURL = "users"
 var baseTitle = "用户"
 var pageSizeDefault = 11

@@ -3,9 +3,16 @@ package admin
 import (
 	"fmt"
 
-	"github.com/idoall/TokenExchangeCommon/commonutils"
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers"
+	"github.com/idoall/TokenExchangeCommon/commonutils"
 )
+
+// Result struct
+type Result struct {
+	Code  int    `json:"code"`
+	Title string `json:"title"`
+	Msg   string `json:"msg"`
+}
 
 // AdminBaseController struct
 type AdminBaseController struct {
