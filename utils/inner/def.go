@@ -11,11 +11,12 @@ var (
 
 const (
 
-	// 注册的命名空间 ID
-	// NAMESPACE_ID = "mshk.top.api.v1.cusers"
-	NAMESPACE_MICROSERVICE_APIUSERS = "go.micro.api.mshk.api.v1"
-	// 注册的命名空间 ID
+	// 注册的命名空间 ID - go micro api
+	NAMESPACE_MICROSERVICE_API = "go.micro.api.mshk.api.v1"
+	// 注册的命名空间 ID - go micro server - Users
 	NAMESPACE_MICROSERVICE_SRVUSERS = "go.micro.srv.mshk.v1.srvusers"
-	// 注册的命名空间 ID
+	// 注册的命名空间 ID - go micro server - UsersGroup
+	NAMESPACE_MICROSERVICE_SRVUSERSGROUP = "go.micro.srv.mshk.v1.srvusersgroup"
+	// 注册的命名空间 ID - go micro server - HistoryUserLogin
 	NAMESPACE_MICROSERVICE_SRVHISTORYUSERLOGIN = "go.micro.srv.mshk.v1.srvhistoryuserlogin"
 )

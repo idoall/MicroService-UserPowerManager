@@ -7,4 +7,5 @@ userpowermanager
 web/mshk.web
 api/apiusers/mshk.apiusers
 srv/srvusers/mshk.srvusers
+srv/srvusergroup/mshk.srvusergroup
 srv/srvhistoryuserlogin/mshk.srvhistoryuserlogin

@@ -34,6 +34,12 @@ func main() {
 	// Register Handler
 	proto.RegisterSrvUsersHandler(service.Server(), new(handler.SrvUsers))
 
+	// Register Struct as Subscriber
+	// micro.RegisterSubscriber("go.micro.srv.template", service.Server(), new(subscriber.Example))
+
+	// // Register Function as Subscriber
+	// micro.RegisterSubscriber("go.micro.srv.template", service.Server(), subscriber.Handler)
+
 	// Run service
 	if err := service.Run(); err != nil {
 		log.Fatal(err)

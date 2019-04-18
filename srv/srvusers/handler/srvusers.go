@@ -32,30 +32,30 @@ func (e *SrvUsers) Add(ctx context.Context, req *proto.AddRequest, rep *proto.Ad
 		inner.Mlogger.Infof("Received %s Service [Add] request", namespace_id)
 	}
 
-	if req.Models.UserName == "" {
+	if req.Model.UserName == "" {
 		return errors.BadRequest(namespace_id, "UserName 不能为空")
 	}
 
-	if req.Models.Password == "" {
+	if req.Model.Password == "" {
 		return errors.BadRequest(namespace_id, "Password 不能为空")
 	}
 
-	if req.Models.Email == "" {
+	if req.Model.Email == "" {
 		return errors.BadRequest(namespace_id, "Email 不能为空")
-	} else if err := checkmail.ValidateFormat(req.Models.Email); err != nil {
+	} else if err := checkmail.ValidateFormat(req.Model.Email); err != nil {
 		return errors.BadRequest(namespace_id, "Email 的格式不正确:%s", err.Error())
 	}
 
 	// 创建用户结构
 	model := new(models.Users)
-	model.UserName = req.Models.UserName
-	model.RealyName = req.Models.RealyName
-	model.Password = req.Models.Password
-	model.Email = req.Models.Email
-	model.AuthKey = req.Models.AuthKey
-	model.IsDel = req.Models.IsDel
-	model.ParentId = int(req.Models.ParentId)
-	model.Note = req.Models.Note
+	model.UserName = req.Model.UserName
+	model.RealyName = req.Model.RealyName
+	model.Password = req.Model.Password
+	model.Email = req.Model.Email
+	model.AuthKey = req.Model.AuthKey
+	model.IsDel = req.Model.IsDel
+	model.ParentId = int(req.Model.ParentId)
+	model.Note = req.Model.Note
 
 	// 添加用户
 	ctx, dbspan := jaeger.StartSpan(ctx, "Srv_User_Add_WriteDB_Begin")
@@ -142,7 +142,7 @@ func (e *SrvUsers) GetList(ctx context.Context, req *proto.GetListRequest, rep *
 }
 
 // 获取单个用户
-func (e *SrvUsers) GetUser(ctx context.Context, req *proto.GetUserRequest, rep *proto.GetUserResponse) error {
+func (e *SrvUsers) Get(ctx context.Context, req *proto.GetRequest, rep *proto.GetResponse) error {
 
 	var err error
 	var modelUser *models.Users
@@ -173,7 +173,7 @@ func (e *SrvUsers) GetUser(ctx context.Context, req *proto.GetUserRequest, rep *
 	if modelUser, err = new(models.Users).QueryOne(cond, "-id"); err != nil {
 		return errors.BadRequest(namespace_id, "models.Users GetOne Error:%s", err.Error())
 	}
-	responseUser := &proto.User{
+	responseModel := &proto.User{
 		Id:             int64(modelUser.Id),
 		UserName:       modelUser.UserName,
 		RealyName:      modelUser.RealyName,
@@ -186,7 +186,7 @@ func (e *SrvUsers) GetUser(ctx context.Context, req *proto.GetUserRequest, rep *
 		LastUpdateTime: modelUser.LastUpdateTime.Unix(),
 	}
 
-	rep.Models = responseUser
+	rep.Model = responseModel
 
 	// 写入一个 jaeger span
 	ctx, span = jaeger.StartSpan(ctx, "Srv_User_GetUser_End")
@@ -213,25 +213,25 @@ func (e *SrvUsers) Update(ctx context.Context, req *proto.UpdateRequest, rep *pr
 	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVUSERS
 
 	// 判断请求参数
-	if req.Models.Id == 0 {
+	if req.Model.Id == 0 {
 		return errors.BadRequest(namespace_id, "User.Id 不能为0")
 	}
 
 	// 根据 id 获取一个用户
-	if modelUser, err = new(models.Users).GetOne(req.Models.Id); err != nil {
+	if modelUser, err = new(models.Users).GetOne(req.Model.Id); err != nil {
 		return errors.BadRequest(namespace_id, "UpdateUser models.Users GetOne Error:%s", err.Error())
 	}
 
-	modelUser.Id = int(req.Models.Id)
-	modelUser.UserName = req.Models.UserName
-	modelUser.RealyName = req.Models.RealyName
-	modelUser.Password = req.Models.Password
-	modelUser.Email = req.Models.Email
-	modelUser.ParentId = int(req.Models.ParentId)
-	modelUser.Note = req.Models.Note
-	modelUser.IsDel = req.Models.IsDel
-	modelUser.ParentId = int(req.Models.ParentId)
-	modelUser.CreateTime = commonutils.TimeFromUnixEscInt64(req.Models.CreateTime)
+	modelUser.Id = int(req.Model.Id)
+	modelUser.UserName = req.Model.UserName
+	modelUser.RealyName = req.Model.RealyName
+	modelUser.Password = req.Model.Password
+	modelUser.Email = req.Model.Email
+	modelUser.ParentId = int(req.Model.ParentId)
+	modelUser.Note = req.Model.Note
+	modelUser.IsDel = req.Model.IsDel
+	modelUser.ParentId = int(req.Model.ParentId)
+	modelUser.CreateTime = commonutils.TimeFromUnixEscInt64(req.Model.CreateTime)
 
 	// 修改用户
 	if ok, err := modelUser.Update(modelUser); err != nil {

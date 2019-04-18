@@ -1,13 +1,13 @@
 package models
 
 import (
-	"errors"
+	"database/sql"
 	"fmt"
-	"reflect"
 	"strings"
 	"time"
 
 	"github.com/astaxie/beego/orm"
+	"github.com/idoall/TokenExchangeCommon/commonutils"
 )
 
 type UsersGroup struct {
@@ -28,129 +28,104 @@ func init() {
 	orm.RegisterModel(new(UsersGroup))
 }
 
-// AddUsersGroup insert a new UsersGroup into database and returns
-// last inserted Id on success.
-func AddUsersGroup(m *UsersGroup) (id int64, err error) {
+// Add 添加
+func (e *UsersGroup) Add(k *UsersGroup) (int64, error) {
 	o := orm.NewOrm()
-	id, err = o.Insert(m)
-	return
+	k.CreateTime = time.Now()
+	k.LastUpdateTime = k.CreateTime
+	return o.Insert(k)
 }
 
-// GetUsersGroupById retrieves UsersGroup by Id. Returns error if
-// Id doesn't exist
-func GetUsersGroupById(id int) (v *UsersGroup, err error) {
-	o := orm.NewOrm()
-	v = &UsersGroup{Id: id}
-	if err = o.Read(v); err == nil {
-		return v, nil
-	}
-	return nil, err
+// GetOne 获取一条记录
+func (e *UsersGroup) GetOne(id int64) (*UsersGroup, error) {
+	return e.QueryOne(orm.NewCondition().And("id", id), "-id")
 }
 
-// GetAllUsersGroup retrieves all UsersGroup matches certain condition. Returns empty list if
-// no records exist
-func GetAllUsersGroup(query map[string]string, fields []string, sortby []string, order []string,
-	offset int64, limit int64) (ml []interface{}, err error) {
-	o := orm.NewOrm()
-	qs := o.QueryTable(new(UsersGroup))
-	// query k=v
-	for k, v := range query {
-		// rewrite dot-notation to Object__Attribute
-		k = strings.Replace(k, ".", "__", -1)
-		if strings.Contains(k, "isnull") {
-			qs = qs.Filter(k, (v == "true" || v == "1"))
-		} else {
-			qs = qs.Filter(k, v)
-		}
+// GetChildIdArray 获取创建的用户ID列表
+func (e *UsersGroup) GetChildIdArray(id int64) ([]int64, error) {
+	cond := orm.NewCondition().And("parent_id", id)
+	list, _, err := e.GetAll(cond, 1000, 1, "-id")
+	if err != nil && !commonutils.StringContains(err.Error(), "no row found") {
+		return nil, err
 	}
-	// order by:
-	var sortFields []string
-	if len(sortby) != 0 {
-		if len(sortby) == len(order) {
-			// 1) for each sort field, there is an associated order
-			for i, v := range sortby {
-				orderby := ""
-				if order[i] == "desc" {
-					orderby = "-" + v
-				} else if order[i] == "asc" {
-					orderby = v
-				} else {
-					return nil, errors.New("Error: Invalid order. Must be either [asc|desc]")
-				}
-				sortFields = append(sortFields, orderby)
-			}
-			qs = qs.OrderBy(sortFields...)
-		} else if len(sortby) != len(order) && len(order) == 1 {
-			// 2) there is exactly one order, all the sorted fields will be sorted by this order
-			for _, v := range sortby {
-				orderby := ""
-				if order[0] == "desc" {
-					orderby = "-" + v
-				} else if order[0] == "asc" {
-					orderby = v
-				} else {
-					return nil, errors.New("Error: Invalid order. Must be either [asc|desc]")
-				}
-				sortFields = append(sortFields, orderby)
-			}
-		} else if len(sortby) != len(order) && len(order) != 1 {
-			return nil, errors.New("Error: 'sortby', 'order' sizes mismatch or 'order' size is not 1")
-		}
-	} else {
-		if len(order) != 0 {
-			return nil, errors.New("Error: unused 'order' fields")
-		}
+	result := []int64{}
+	for _, v := range list {
+		result = append(result, int64(v.Id))
 	}
-
-	var l []UsersGroup
-	qs = qs.OrderBy(sortFields...)
-	if _, err = qs.Limit(limit, offset).All(&l, fields...); err == nil {
-		if len(fields) == 0 {
-			for _, v := range l {
-				ml = append(ml, v)
-			}
-		} else {
-			// trim unused fields
-			for _, v := range l {
-				m := make(map[string]interface{})
-				val := reflect.ValueOf(v)
-				for _, fname := range fields {
-					m[fname] = val.FieldByName(fname).Interface()
-				}
-				ml = append(ml, m)
-			}
-		}
-		return ml, nil
-	}
-	return nil, err
+	return result, nil
 }
 
-// UpdateUsersGroup updates UsersGroup by Id and returns error if
-// the record to be updated doesn't exist
-func UpdateUsersGroupById(m *UsersGroup) (err error) {
+// QueryOne 获取一条记录
+func (e *UsersGroup) QueryOne(cond *orm.Condition, order ...string) (*UsersGroup, error) {
 	o := orm.NewOrm()
-	v := UsersGroup{Id: m.Id}
-	// ascertain id exists in the database
-	if err = o.Read(&v); err == nil {
-		var num int64
-		if num, err = o.Update(m); err == nil {
-			fmt.Println("Number of records updated in database:", num)
-		}
+	result := UsersGroup{}
+	qs := o.QueryTable(e.TableName())
+
+	qs = qs.SetCond(cond)
+
+	qs = qs.RelatedSel()
+
+	//Order
+	if len(order) != 0 {
+		qs = qs.OrderBy(order...)
 	}
-	return
+
+	err := qs.One(&result)
+	if err != nil {
+		return &result, err
+	}
+	return &result, nil
 }
 
-// DeleteUsersGroup deletes UsersGroup by Id and returns error if
-// the record to be deleted doesn't exist
-func DeleteUsersGroup(id int) (err error) {
+// GetAll 获取
+func (e *UsersGroup) GetAll(cond *orm.Condition, pageSize, currentPageIndex int, order ...string) ([]*UsersGroup, int64, error) {
 	o := orm.NewOrm()
-	v := UsersGroup{Id: id}
-	// ascertain id exists in the database
-	if err = o.Read(&v); err == nil {
-		var num int64
-		if num, err = o.Delete(&UsersGroup{Id: id}); err == nil {
-			fmt.Println("Number of records deleted in database:", num)
-		}
+	var resultlist []*UsersGroup
+	var count int64
+
+	qs := o.QueryTable(e.TableName())
+
+	qs = qs.SetCond(cond)
+
+	qs = qs.RelatedSel()
+	//Order
+	if len(order) != 0 {
+		qs = qs.OrderBy(order...)
 	}
-	return
+
+	_, err := qs.Limit(pageSize, (currentPageIndex-1)*pageSize).All(&resultlist)
+	if err != nil {
+		return resultlist, count, err
+	}
+	count, err = qs.Count()
+	if err != nil {
+		return resultlist, count, err
+	}
+
+	return resultlist, count, nil
+}
+
+// RawSQL 执行sql
+func (e *UsersGroup) RawSQL(sql string, param ...interface{}) (sql.Result, error) {
+	o := orm.NewOrm()
+	return o.Raw(sql, param).Exec()
+}
+
+// Update 修改
+func (e *UsersGroup) Update(k *UsersGroup) (int64, error) {
+	o := orm.NewOrm()
+	k.LastUpdateTime = time.Now()
+	return o.Update(k)
+}
+
+// Delete  删除一条记录
+func (e *UsersGroup) Delete(id int64) (int64, error) {
+
+	return e.Delete(id)
+}
+
+// BatchDelete  批量删除多条记录
+func (e *UsersGroup) BatchDelete(id []string) (sql.Result, error) {
+	sql := fmt.Sprintf("DELETE FROM %s WHERE id IN (%s)", e.TableName(), strings.Join(id, ","))
+	return e.RawSQL(sql)
 }

@@ -1,42 +1,44 @@
 syntax = "proto3";
 
 // import public "google/protobuf/timestamp.proto"; 
-package SrvUsers;
+package SrvUsersGroup;
 
-service SrvUsers {
-	// 添回用户
+service SrvUsersGroup {
+	// 添回用户组
 	rpc Add(AddRequest) returns (AddResponse) {}
-	// 获取用户列表
+	// 获取用户组列表
 	rpc GetList(GetListRequest) returns (GetListResponse) {}
-	// 获取单个用户
+	// 获取单个用户组
 	rpc Get(GetRequest) returns (GetResponse) {}
-	// 修改用户信息
+	// 修改用户组信息
 	rpc Update(UpdateRequest) returns (UpdateResponse) {}
-	// 批量删除用户（假删除）
+	// 批量删除用户组
 	rpc BatchDelete(DeleteRequest) returns (DeleteResponse) {}
 }
 
 
-message User {
+message UsersGroup {
 	int64 Id = 1;
-	string UserName = 2;
-	string RealyName = 3;
-	string Password = 4;
-	string AuthKey = 5;
-	string Email = 6;
-	bool IsDel = 7;
-	string Note = 8;
-	int64 ParentId = 9;
-	int64 CreateTime = 10;
-	int64 LastUpdateTime = 11;
+	// 用户组名称
+	string Name = 2;
+	// 所属组Id
+	int64 ParentId = 3;
+	// 排序
+	int64 Sorts = 4;
+	// 备注
+	string Note = 5;
+	// 创建时间
+	int64 CreateTime = 6;
+	// 最后是错新时间
+	int64 LastUpdateTime = 7;
 }
 
 message AddRequest {
-	User Model = 1;
+	UsersGroup Model = 1;
 }
 
 message AddResponse {
-	int64 NewUserId = 1;
+	int64 NewId = 1;
 }
 
 message GetListRequest{
@@ -47,20 +49,19 @@ message GetListRequest{
 
 message GetListResponse{
 	int64 TotalCount = 1;
-	repeated User List = 2;
+	repeated UsersGroup List = 2;
 }
 
 message GetRequest {
-	int64 UserId = 1;
-	string UserName = 2;
+	int64 Id = 1;
 }
 
 message GetResponse {
-	User Model = 1;
+	UsersGroup Model = 1;
 }
 
 message UpdateRequest {
-	User Model = 1;
+	UsersGroup Model = 1;
 }
 
 message UpdateResponse {
@@ -69,7 +70,7 @@ message UpdateResponse {
 }
 
 message DeleteRequest {
-	repeated string UserIdArray = 1;
+	repeated string IdArray = 1;
 }
 
 message DeleteResponse {
