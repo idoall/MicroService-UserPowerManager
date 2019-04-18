@@ -28,7 +28,7 @@ import (
 
 // Apiusers struct
 type ApiUsers struct {
-	ClientUser    srvusers.SrvUsersService
+	Client        srvusers.SrvUsersService
 	ClientHistory srvhistoryuserlogin.SrvHistoryUserLoginService
 }
 
@@ -99,7 +99,7 @@ func (e *ApiUsers) Add(ctx context.Context, req *api.Request, rsp *api.Response)
 	}
 
 	// 调用服务端方法
-	response, err := e.ClientUser.Add(ctx, &srvusers.AddRequest{Model: resUser})
+	response, err := e.Client.Add(ctx, &srvusers.AddRequest{Model: resUser})
 	if err != nil {
 		return errors.InternalServerError(namespace_id, err.Error())
 	}
@@ -168,7 +168,7 @@ func (e *ApiUsers) GetList(ctx context.Context, req *api.Request, rsp *api.Respo
 	// 获取请求参数 - 结束
 
 	// 调用服务端方法
-	response, err := e.ClientUser.GetList(ctx, &srvusers.GetListRequest{
+	response, err := e.Client.GetList(ctx, &srvusers.GetListRequest{
 		CurrentPageIndex: currentPageIndex,
 		PageSize:         pageSize,
 		OrderBy:          orderBy,
@@ -241,7 +241,7 @@ func (e *ApiUsers) GetUser(ctx context.Context, req *api.Request, rsp *api.Respo
 	// 获取请求参数 - 结束
 
 	// 调用服务端方法
-	response, err := e.ClientUser.Get(ctx, &srvusers.GetRequest{
+	response, err := e.Client.Get(ctx, &srvusers.GetRequest{
 		UserId:   userId,
 		UserName: userName,
 	})
@@ -322,7 +322,7 @@ func (e *ApiUsers) Update(ctx context.Context, req *api.Request, rsp *api.Respon
 	// 获取请求参数 - 结束
 
 	// 调用服务端方法获取用户
-	responseGetUser, err := e.ClientUser.Get(ctx, &srvusers.GetRequest{
+	responseGetUser, err := e.Client.Get(ctx, &srvusers.GetRequest{
 		UserId: userId,
 	})
 	if err != nil {
@@ -350,7 +350,7 @@ func (e *ApiUsers) Update(ctx context.Context, req *api.Request, rsp *api.Respon
 		CreateTime:     responseGetUser.Model.CreateTime,
 		LastUpdateTime: responseGetUser.Model.LastUpdateTime,
 	}
-	response, err := e.ClientUser.Update(ctx, &srvusers.UpdateRequest{Model: responseUpdateUser})
+	response, err := e.Client.Update(ctx, &srvusers.UpdateRequest{Model: responseUpdateUser})
 	if err != nil {
 		return errors.InternalServerError(namespace_id, err.Error())
 	}
@@ -408,7 +408,7 @@ func (e *ApiUsers) BatchDelete(ctx context.Context, req *api.Request, rsp *api.R
 	// 获取请求参数 - 结束
 
 	// 调用服务端方法获取用户
-	response, err := e.ClientUser.BatchDelete(ctx, &srvusers.DeleteRequest{
+	response, err := e.Client.BatchDelete(ctx, &srvusers.DeleteRequest{
 		UserIdArray: userIdArray,
 	})
 	if err != nil {
@@ -496,7 +496,7 @@ func (e *ApiUsers) UserLogin(ctx context.Context, req *api.Request, rsp *api.Res
 	// 获取请求参数 -------------------- 结束
 
 	// 调用服务端方法获取用户
-	response, err := e.ClientUser.Get(ctx, &srvusers.GetRequest{
+	response, err := e.Client.Get(ctx, &srvusers.GetRequest{
 		UserName: userName,
 	})
 	if err != nil {
