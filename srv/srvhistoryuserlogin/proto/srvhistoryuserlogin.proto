@@ -4,6 +4,7 @@ import "github.com/idoall/MicroService-UserPowerManager/srv/srvusers/proto/srvus
 
 package SrvHistoryUserLogin;
 
+// 登录历史相关操作
 service SrvHistoryUserLogin {
 	// 添回一条记录
 	rpc Add(AddRequest) returns (AddResponse) {}

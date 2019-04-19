@@ -13,7 +13,7 @@ import (
 type UsersGroup struct {
 	Id             int       `orm:"column(id);auto"`
 	Name           string    `orm:"column(name);size(200);null" description:"用户组名称"`
-	ParentId       int       `orm:"column(parent_id)" description:"所属组Id"`
+	ParentId       int       `orm:"column(parent_id)" description:"所属上级Id"`
 	Sorts          int       `orm:"column(sorts)" description:"排序"`
 	Note           string    `orm:"column(note);size(2000);null" description:"备注"`
 	CreateTime     time.Time `orm:"column(create_time);type(datetime)"`

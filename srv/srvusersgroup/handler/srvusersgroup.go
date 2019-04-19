@@ -235,8 +235,8 @@ func (e *SrvUsersGroup) BatchDelete(ctx context.Context, req *proto.DeleteReques
 	}
 
 	// 批量删除用户
-	if _, err = new(models.Users).BatchDelete(req.IdArray); err != nil {
-		return errors.BadRequest(namespace_id, "BatchDeleteUserGroup BatchDelete Error:%s", err.Error())
+	if _, err = new(models.UsersGroup).BatchDelete(req.IdArray); err != nil {
+		return errors.BadRequest(namespace_id, "BatchDelete UserGroup Error:%s", err.Error())
 	} else {
 		rep.Deleted = 1
 	}

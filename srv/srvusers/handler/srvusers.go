@@ -271,7 +271,7 @@ func (e *SrvUsers) BatchDelete(ctx context.Context, req *proto.DeleteRequest, re
 
 	// 批量删除用户
 	if _, err = new(models.Users).BatchDelete(req.UserIdArray); err != nil {
-		return errors.BadRequest(namespace_id, "BatchDeleteUser models.Users BatchDelete Error:%s", err.Error())
+		return errors.BadRequest(namespace_id, "BatchDeleteUser Users Error:%s", err.Error())
 	} else {
 		rep.Deleted = 1
 	}

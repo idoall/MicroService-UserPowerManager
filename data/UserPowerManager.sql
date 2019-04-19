@@ -46,7 +46,7 @@ DROP TABLE IF EXISTS `UserPowerManager`.`users_group` ;
 CREATE TABLE IF NOT EXISTS `UserPowerManager`.`users_group` (
   `id` INT UNIQUE NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(200) NULL COMMENT '用户组名称',
-  `parent_id` INT NOT NULL DEFAULT 0 COMMENT '所属组Id',
+  `parent_id` INT NOT NULL DEFAULT 0 COMMENT '所属上级Id',
   `sorts` INT NOT NULL DEFAULT 0 COMMENT '排序',
   `note` VARCHAR(2000) NULL COMMENT '备注',
   `create_time` DATETIME NOT NULL,
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `UserPowerManager`.`columns` (
   `id` INT UNIQUE NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(200) NOT NULL COMMENT '栏目名称',
   `URL` VARCHAR(500) NULL COMMENT 'URL',
-  `parent_id` INT NOT NULL COMMENT '所属组Id',
+  `parent_id` INT NOT NULL COMMENT '所属上级Id',
   `sorts` INT NOT NULL DEFAULT 0 COMMENT '排序',
   `is_show_nav` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否显示在导航',
   `css_icon` VARCHAR(50) NULL COMMENT 'css图标样式',

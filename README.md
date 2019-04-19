@@ -2,6 +2,8 @@
 
 # 用户权限管理
 > 使用微服务创建的用户以及权限管理功能 
+> 
+> 实例中默认您已经安装好 go-micro 环境，关于 go-micro 的环境安装请移步 [这里](https://micro.mu/docs/go-micro.html)
 
 实例中主要有以下功能：
 * `jaeger` 来收集分布式服务追踪
@@ -49,6 +51,20 @@
 ...
 | |____srvhistoryuserlogin              # 用户登录历史记录的 Service
 ...
+```
+
+## go-micro 环境安装
+
+代码生成需要安装 Protobuf
+```
+$ brew install protobuf
+$ go get -u -v github.com/golang/protobuf/{proto,protoc-gen-go}
+$ go get -u -v github.com/micro/protoc-gen-micro
+```
+
+在项目中初始化相关依赖，需要golang 1.12+
+```
+$ go mod tidy
 ```
 
 ## 数据库安装
