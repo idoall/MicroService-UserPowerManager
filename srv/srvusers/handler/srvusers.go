@@ -54,7 +54,7 @@ func (e *SrvUsers) Add(ctx context.Context, req *proto.AddRequest, rep *proto.Ad
 	model.Email = req.Model.Email
 	model.AuthKey = req.Model.AuthKey
 	model.IsDel = req.Model.IsDel
-	model.ParentId = int(req.Model.ParentId)
+	model.ParentID = int(req.Model.ParentID)
 	model.Note = req.Model.Note
 
 	// 添加用户
@@ -67,7 +67,7 @@ func (e *SrvUsers) Add(ctx context.Context, req *proto.AddRequest, rep *proto.Ad
 	} else {
 
 		// 设置返回值
-		rep.NewUserId = newID
+		rep.NewID = newID
 	}
 	ctx, dbspan = jaeger.StartSpan(ctx, "Srv_User_Add_WriteDB_End")
 	if span != nil {
@@ -78,7 +78,7 @@ func (e *SrvUsers) Add(ctx context.Context, req *proto.AddRequest, rep *proto.Ad
 	ctx, span = jaeger.StartSpan(ctx, "Srv_User_Add_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("NewUserId", rep.NewUserId)
+		span.SetTag("NewID", rep.NewID)
 	}
 
 	return nil
@@ -114,14 +114,14 @@ func (e *SrvUsers) GetList(ctx context.Context, req *proto.GetListRequest, rep *
 		rep.TotalCount = totalcount
 		for _, v := range list {
 			rep.List = append(rep.List, &proto.User{
-				Id:             int64(v.Id),
+				ID:             int64(v.ID),
 				UserName:       v.UserName,
 				RealyName:      v.RealyName,
 				Password:       v.Password,
 				AuthKey:        v.AuthKey,
 				Email:          v.Email,
 				Note:           v.Note,
-				ParentId:       int64(v.ParentId),
+				ParentID:       int64(v.ParentID),
 				CreateTime:     v.CreateTime.Unix(),
 				LastUpdateTime: v.LastUpdateTime.Unix(),
 			})
@@ -156,13 +156,13 @@ func (e *SrvUsers) Get(ctx context.Context, req *proto.GetRequest, rep *proto.Ge
 	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVUSERS
 
 	// 判断请求参数
-	if req.UserId == 0 && req.UserName == "" {
+	if req.ID == 0 && req.UserName == "" {
 		return errors.BadRequest(namespace_id, "UserId 和 UserName 没有赋值")
 	}
 
 	cond := orm.NewCondition()
-	if req.UserId != 0 {
-		cond = cond.And("id", req.UserId)
+	if req.ID != 0 {
+		cond = cond.And("id", req.ID)
 	}
 
 	if req.UserName != "" {
@@ -174,14 +174,14 @@ func (e *SrvUsers) Get(ctx context.Context, req *proto.GetRequest, rep *proto.Ge
 		return errors.BadRequest(namespace_id, "models.Users GetOne Error:%s", err.Error())
 	}
 	responseModel := &proto.User{
-		Id:             int64(modelUser.Id),
+		ID:             int64(modelUser.ID),
 		UserName:       modelUser.UserName,
 		RealyName:      modelUser.RealyName,
 		Password:       modelUser.Password,
 		Email:          modelUser.Email,
 		AuthKey:        modelUser.AuthKey,
 		Note:           modelUser.Note,
-		ParentId:       int64(modelUser.ParentId),
+		ParentID:       int64(modelUser.ParentID),
 		CreateTime:     modelUser.CreateTime.Unix(),
 		LastUpdateTime: modelUser.LastUpdateTime.Unix(),
 	}
@@ -192,7 +192,8 @@ func (e *SrvUsers) Get(ctx context.Context, req *proto.GetRequest, rep *proto.Ge
 	ctx, span = jaeger.StartSpan(ctx, "Srv_User_GetUser_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("UserId", req.UserId)
+		span.SetTag("ID", req.ID)
+		span.SetTag("UserName", req.UserName)
 	}
 
 	return nil
@@ -213,24 +214,23 @@ func (e *SrvUsers) Update(ctx context.Context, req *proto.UpdateRequest, rep *pr
 	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVUSERS
 
 	// 判断请求参数
-	if req.Model.Id == 0 {
-		return errors.BadRequest(namespace_id, "User.Id 不能为0")
+	if req.Model.ID == 0 {
+		return errors.BadRequest(namespace_id, "User.ID 不能为0")
 	}
 
 	// 根据 id 获取一个用户
-	if modelUser, err = new(models.Users).GetOne(req.Model.Id); err != nil {
+	if modelUser, err = new(models.Users).GetOne(req.Model.ID); err != nil {
 		return errors.BadRequest(namespace_id, "UpdateUser models.Users GetOne Error:%s", err.Error())
 	}
 
-	modelUser.Id = int(req.Model.Id)
+	modelUser.ID = int(req.Model.ID)
 	modelUser.UserName = req.Model.UserName
 	modelUser.RealyName = req.Model.RealyName
 	modelUser.Password = req.Model.Password
 	modelUser.Email = req.Model.Email
-	modelUser.ParentId = int(req.Model.ParentId)
+	modelUser.ParentID = int(req.Model.ParentID)
 	modelUser.Note = req.Model.Note
 	modelUser.IsDel = req.Model.IsDel
-	modelUser.ParentId = int(req.Model.ParentId)
 	modelUser.CreateTime = commonutils.TimeFromUnixEscInt64(req.Model.CreateTime)
 
 	// 修改用户
@@ -265,12 +265,12 @@ func (e *SrvUsers) BatchDelete(ctx context.Context, req *proto.DeleteRequest, re
 	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVUSERS
 
 	// 判断请求参数
-	if len(req.UserIdArray) == 0 {
+	if len(req.UserIDArray) == 0 {
 		return errors.BadRequest(namespace_id, "User.Id 长度不能为0")
 	}
 
 	// 批量删除用户
-	if _, err = new(models.Users).BatchDelete(req.UserIdArray); err != nil {
+	if _, err = new(models.Users).BatchDelete(req.UserIDArray); err != nil {
 		return errors.BadRequest(namespace_id, "BatchDeleteUser Users Error:%s", err.Error())
 	} else {
 		rep.Deleted = 1
@@ -280,7 +280,7 @@ func (e *SrvUsers) BatchDelete(ctx context.Context, req *proto.DeleteRequest, re
 	ctx, span = jaeger.StartSpan(ctx, "Srv_User_BatchDelete_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("UserIdArray", strings.Join(req.UserIdArray, ","))
+		span.SetTag("UserIDArray", strings.Join(req.UserIDArray, ","))
 	}
 
 	return nil

@@ -20,7 +20,7 @@ service SrvUsers {
 
 message User {
 	// 编号Id
-	int64 Id = 1;
+	int64 ID = 1;
 	// 用户名称
 	string UserName = 2;
 	// 真实姓名或昵称
@@ -35,7 +35,7 @@ message User {
 	bool IsDel = 7;
 	// 备注
 	string Note = 8;
-	int64 ParentId = 9;
+	int64 ParentID = 9;
 	int64 CreateTime = 10;
 	int64 LastUpdateTime = 11;
 }
@@ -45,7 +45,7 @@ message AddRequest {
 }
 
 message AddResponse {
-	int64 NewUserId = 1;
+	int64 NewID = 1;
 }
 
 message GetListRequest{
@@ -60,7 +60,7 @@ message GetListResponse{
 }
 
 message GetRequest {
-	int64 UserId = 1;
+	int64 ID = 1;
 	string UserName = 2;
 }
 
@@ -78,7 +78,7 @@ message UpdateResponse {
 }
 
 message DeleteRequest {
-	repeated string UserIdArray = 1;
+	repeated string IDArray = 1;
 }
 
 message DeleteResponse {

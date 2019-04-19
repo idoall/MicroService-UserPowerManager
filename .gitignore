@@ -6,6 +6,9 @@ userpowermanager
 *.bak
 web/mshk.web
 api/apiusers/mshk.apiusers
+api/apicolumns/mshk.apicolumns
+api/apiusersgroup/mshk.apiusersgroup
 srv/srvusers/mshk.srvusers
 srv/srvusergroup/mshk.srvusergroup
+srv/srvcolumns/mshk.srvcolumns
 srv/srvhistoryuserlogin/mshk.srvhistoryuserlogin

@@ -37,10 +37,10 @@ func (e *SrvColumns) Add(ctx context.Context, req *proto.AddRequest, rep *proto.
 	model := new(models.Columns)
 	model.Name = req.Model.Name
 	model.URL = req.Model.URL
-	model.ParentId = int(req.Model.ParentId)
+	model.ParentID = int(req.Model.ParentID)
 	model.Sorts = int(req.Model.Sorts)
 	model.IsShowNav = req.Model.IsShowNav
-	model.CssIcon = req.Model.CssIceo
+	model.CssIcon = req.Model.CssIcon
 
 	// 添加到数据库
 	ctx, dbspan := jaeger.StartSpan(ctx, "Srv_Columns_Add_WriteDB_Begin")
@@ -52,7 +52,7 @@ func (e *SrvColumns) Add(ctx context.Context, req *proto.AddRequest, rep *proto.
 	} else {
 
 		// 设置返回值
-		rep.NewId = newID
+		rep.NewID = newID
 	}
 	ctx, dbspan = jaeger.StartSpan(ctx, "Srv_Columns_Add_WriteDB_End")
 	if span != nil {
@@ -63,7 +63,7 @@ func (e *SrvColumns) Add(ctx context.Context, req *proto.AddRequest, rep *proto.
 	ctx, span = jaeger.StartSpan(ctx, "Srv_Columns_Add_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("NewId", rep.NewId)
+		span.SetTag("NewID", rep.NewID)
 	}
 
 	return nil
@@ -99,13 +99,13 @@ func (e *SrvColumns) GetList(ctx context.Context, req *proto.GetListRequest, rep
 		rep.TotalCount = totalcount
 		for _, v := range list {
 			rep.List = append(rep.List, &proto.Columns{
-				Id:             int64(v.Id),
+				ID:             int64(v.ID),
 				Name:           v.Name,
 				URL:            v.URL,
 				Sorts:          int64(v.Sorts),
-				ParentId:       int64(v.ParentId),
+				ParentID:       int64(v.ParentID),
 				IsShowNav:      v.IsShowNav,
-				CssIceo:        v.CssIcon,
+				CssIcon:        v.CssIcon,
 				CreateTime:     v.CreateTime.Unix(),
 				LastUpdateTime: v.LastUpdateTime.Unix(),
 			})
@@ -140,24 +140,24 @@ func (e *SrvColumns) Get(ctx context.Context, req *proto.GetRequest, rep *proto.
 	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVCOLUMNS
 
 	// 判断请求参数
-	if req.Id == 0 {
+	if req.ID == 0 {
 		return errors.BadRequest(namespace_id, "Id 没有赋值")
 	}
 
-	cond := orm.NewCondition().And("id", req.Id)
+	cond := orm.NewCondition().And("id", req.ID)
 
 	// 根据 id 获取一个栏目
 	if modelGet, err = new(models.Columns).QueryOne(cond, "-id"); err != nil {
 		return errors.BadRequest(namespace_id, "models.Columns QueryOne Error:%s", err.Error())
 	}
 	responseModel := &proto.Columns{
-		Id:             int64(modelGet.Id),
+		ID:             int64(modelGet.ID),
 		Name:           modelGet.Name,
 		URL:            modelGet.URL,
 		Sorts:          int64(modelGet.Sorts),
-		ParentId:       int64(modelGet.ParentId),
+		ParentID:       int64(modelGet.ParentID),
 		IsShowNav:      modelGet.IsShowNav,
-		CssIceo:        modelGet.CssIcon,
+		CssIcon:        modelGet.CssIcon,
 		CreateTime:     modelGet.CreateTime.Unix(),
 		LastUpdateTime: modelGet.LastUpdateTime.Unix(),
 	}
@@ -168,7 +168,7 @@ func (e *SrvColumns) Get(ctx context.Context, req *proto.GetRequest, rep *proto.
 	ctx, span = jaeger.StartSpan(ctx, "Srv_Columns_GetUser_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("Id", req.Id)
+		span.SetTag("ID", req.ID)
 	}
 
 	return nil
@@ -189,22 +189,22 @@ func (e *SrvColumns) Update(ctx context.Context, req *proto.UpdateRequest, rep *
 	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVCOLUMNS
 
 	// 判断请求参数
-	if req.Model.Id == 0 {
-		return errors.BadRequest(namespace_id, "Id 不能为0")
+	if req.Model.ID == 0 {
+		return errors.BadRequest(namespace_id, "ID 不能为0")
 	}
 
 	// 根据 id 获取一个栏目
-	if modelGet, err = new(models.Columns).GetOne(req.Model.Id); err != nil {
+	if modelGet, err = new(models.Columns).GetOne(req.Model.ID); err != nil {
 		return errors.BadRequest(namespace_id, "Update Columns GetOne Error:%s", err.Error())
 	}
 
-	modelGet.Id = int(req.Model.Id)
+	modelGet.ID = int(req.Model.ID)
 	modelGet.Name = req.Model.Name
 	modelGet.Sorts = int(req.Model.Sorts)
-	modelGet.ParentId = int(req.Model.ParentId)
+	modelGet.ParentID = int(req.Model.ParentID)
 	modelGet.URL = req.Model.URL
 	modelGet.IsShowNav = req.Model.IsShowNav
-	modelGet.CssIcon = req.Model.CssIceo
+	modelGet.CssIcon = req.Model.CssIcon
 
 	// 修改
 	if ok, err := modelGet.Update(modelGet); err != nil {
@@ -217,7 +217,7 @@ func (e *SrvColumns) Update(ctx context.Context, req *proto.UpdateRequest, rep *
 	ctx, span = jaeger.StartSpan(ctx, "Srv_Columns_Update_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("Id", modelGet.Id)
+		span.SetTag("ID", modelGet.ID)
 		span.SetTag("Name", modelGet.Name)
 		span.SetTag("Updated", rep.Updated)
 	}

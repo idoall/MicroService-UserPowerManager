@@ -20,19 +20,19 @@ service SrvColumns {
 
 message Columns {
 	// 编号Id
-	int64 Id = 1;
+	int64 ID = 1;
 	// 栏目名称
 	string Name = 2;
 	// URL
 	string URL = 3;
 	// 所属栏目Id
-	int64 ParentId = 4;
+	int64 ParentID = 4;
 	// 排序
 	int64 Sorts = 5;
 	// 是否显示在导航
 	bool IsShowNav = 6;
 	// css图标样式
-	string CssIceo = 7;
+	string CssIcon = 7;
 	// 创建时间
 	int64 CreateTime = 8;
 	// 最后是错新时间
@@ -44,7 +44,7 @@ message AddRequest {
 }
 
 message AddResponse {
-	int64 NewId = 1;
+	int64 NewID = 1;
 }
 
 message GetListRequest{
@@ -59,7 +59,7 @@ message GetListResponse{
 }
 
 message GetRequest {
-	int64 Id = 1;
+	int64 ID = 1;
 }
 
 message GetResponse {
@@ -76,7 +76,7 @@ message UpdateResponse {
 }
 
 message DeleteRequest {
-	repeated string IdArray = 1;
+	repeated string IDArray = 1;
 }
 
 message DeleteResponse {

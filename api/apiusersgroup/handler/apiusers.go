@@ -39,7 +39,7 @@ func (e *ApiUsersGroup) Add(ctx context.Context, req *api.Request, rsp *api.Resp
 
 	// debug
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [Add] request", namespace_id)
+		inner.Mlogger.Infof("Received %s API [ApiUsersGroup][Add] request", namespace_id)
 	}
 
 	// 获取请求参数 - 开始
@@ -66,7 +66,7 @@ func (e *ApiUsersGroup) Add(ctx context.Context, req *api.Request, rsp *api.Resp
 	// make request
 	requestModel := &srvproto.UsersGroup{
 		Name:     name,
-		ParentId: 0,
+		ParentID: 0,
 		Sorts:    sorts,
 		Note:     note,
 	}
@@ -78,11 +78,11 @@ func (e *ApiUsersGroup) Add(ctx context.Context, req *api.Request, rsp *api.Resp
 	}
 
 	// 输出的 json
-	responseJson := struct {
-		NewId int64
+	responseJSON := struct {
+		NewID int64 `json:"newid"`
 	}{}
-	responseJson.NewId = response.NewId
-	b, _ := commonutils.JSONEncode(responseJson)
+	responseJSON.NewID = response.NewID
+	b, _ := commonutils.JSONEncode(responseJSON)
 	rsp.StatusCode = 200
 	rsp.Body = string(b)
 
@@ -96,7 +96,7 @@ func (e *ApiUsersGroup) Add(ctx context.Context, req *api.Request, rsp *api.Resp
 	ctx, span = jaeger.StartSpan(ctx, "Api_UserGroup_Add_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("NewId", response.NewId)
+		span.SetTag("NewID", response.NewID)
 	}
 
 	return nil
@@ -116,7 +116,7 @@ func (e *ApiUsersGroup) GetList(ctx context.Context, req *api.Request, rsp *api.
 	namespace_id := inner.NAMESPACE_MICROSERVICE_API
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [GetList] request", namespace_id)
+		inner.Mlogger.Infof("Received %s API [ApiUsersGroup][GetList] request", namespace_id)
 	}
 
 	// 获取请求参数 - 开始
@@ -199,9 +199,9 @@ func (e *ApiUsersGroup) Get(ctx context.Context, req *api.Request, rsp *api.Resp
 	}
 
 	// 获取请求参数 - 开始
-	var Id int64
+	var ID int64
 	if req.Get["Id"] != nil && req.Get["Id"].Values[0] != "0" {
-		if Id, err = commonutils.Int64FromString(req.Get["Id"].Values[0]); err != nil {
+		if ID, err = commonutils.Int64FromString(req.Get["Id"].Values[0]); err != nil {
 			return errors.InternalServerError(namespace_id, "Id Format Error:%s", err.Error())
 		}
 	}
@@ -210,7 +210,7 @@ func (e *ApiUsersGroup) Get(ctx context.Context, req *api.Request, rsp *api.Resp
 
 	// 调用服务端方法
 	response, err := e.Client.Get(ctx, &srvproto.GetRequest{
-		Id: Id,
+		ID: ID,
 	})
 	if err != nil {
 		return errors.InternalServerError(namespace_id, err.Error())
@@ -230,7 +230,7 @@ func (e *ApiUsersGroup) Get(ctx context.Context, req *api.Request, rsp *api.Resp
 	ctx, span = jaeger.StartSpan(ctx, "Api_UserGroup_GetUser_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("Id", Id)
+		span.SetTag("ID", ID)
 	}
 
 	return nil
@@ -250,7 +250,7 @@ func (e *ApiUsersGroup) Update(ctx context.Context, req *api.Request, rsp *api.R
 	namespace_id := inner.NAMESPACE_MICROSERVICE_API
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [Update] request", namespace_id)
+		inner.Mlogger.Infof("Received %s API [ApiUsersGroup][Update] request", namespace_id)
 	}
 
 	// 获取请求参数 - 开始
@@ -281,9 +281,9 @@ func (e *ApiUsersGroup) Update(ctx context.Context, req *api.Request, rsp *api.R
 
 	// 调用服务端方法 - 修改用户组
 	responseUpdateUser := &srvproto.UsersGroup{
-		Id:       Id,
+		ID:       Id,
 		Name:     name,
-		ParentId: 0,
+		ParentID: 0,
 		Sorts:    sorts,
 		Note:     note,
 	}
@@ -331,7 +331,7 @@ func (e *ApiUsersGroup) BatchDelete(ctx context.Context, req *api.Request, rsp *
 	namespace_id := inner.NAMESPACE_MICROSERVICE_API
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [BatchDelete] request", namespace_id)
+		inner.Mlogger.Infof("Received %s API [ApiUsersGroup][BatchDelete] request", namespace_id)
 	}
 
 	// 获取请求参数 - 开始

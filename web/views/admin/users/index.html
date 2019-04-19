@@ -93,7 +93,7 @@ FUser.prototype.InitMainTable = function () {
        // minimumCountColumns: 2,             //最少允许的列数
        clickToSelect: true,                //是否启用点击选中行
        height: $(window).height() - 150,                      //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
-       uniqueId: "id",                     //每一行的唯一标识，一般为主键列
+       uniqueId: "ID",                     //每一行的唯一标识，一般为主键列
        showToggle: false,                   //是否显示详细视图和列表视图的切换按钮
        cardView: false,                    //是否显示详细视图
        paginationLoop: false,
@@ -112,8 +112,8 @@ FUser.prototype.InitMainTable = function () {
            checkbox: true,
            visible: true                  //是否显示复选框  
        }, {
-           field: 'Id',
-           title: 'id',
+           field: 'ID',
+           title: 'iD',
        }, {
            field: 'UserName',
            title: '用户名',
@@ -129,7 +129,7 @@ FUser.prototype.InitMainTable = function () {
            title: '更新时间',
            formatter: this.FormatterLastUpdateTimeTime
        },{
-           field: 'id',
+           field: 'iD',
            title: '操作',
            width: 120,
            align: 'center',
@@ -158,9 +158,9 @@ FUser.prototype.FormatterLastUpdateTimeTime = function (value, row, index) {
 FUser.prototype.ActionFormatter = function (value, row, index) {
    var id = value;
    var result = [];
-   result.push('<a href="{{.UpdateUrl}}' + row.Id + '"><i class="fa fa-pencil text-navy" title="修改"></i></a>');
+   result.push('<a href="{{.UpdateUrl}}' + row.ID + '"><i class="fa fa-pencil text-navy" title="修改"></i></a>');
    result.push("&nbsp;&nbsp;");
-   result.push('<a href="{{.DelUrl}}' + row.Id + '"><i class="fa fa-close text-danger" title="删除"></i></a>');
+   result.push('<a href="{{.DelUrl}}' + row.ID + '"><i class="fa fa-close text-danger" title="删除"></i></a>');
    result.push("&nbsp;&nbsp;");
    return result.join("");
 }
@@ -182,7 +182,7 @@ FUser.prototype.InitEvent = function () {
 
        var idArray = []
        for (var i = 0; i < checkList.length; i++) {
-           idArray.push(checkList[i].Id)
+           idArray.push(checkList[i].ID)
        }
        var Confirmation_ok = function () {
            // 显示 mark 层

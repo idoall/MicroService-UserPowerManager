@@ -36,7 +36,7 @@ func (e *SrvUsersGroup) Add(ctx context.Context, req *proto.AddRequest, rep *pro
 	// 创建结构
 	model := new(models.UsersGroup)
 	model.Name = req.Model.Name
-	model.ParentId = int(req.Model.ParentId)
+	model.ParentID = int(req.Model.ParentID)
 	model.Sorts = int(req.Model.Sorts)
 	model.Note = req.Model.Note
 
@@ -50,7 +50,7 @@ func (e *SrvUsersGroup) Add(ctx context.Context, req *proto.AddRequest, rep *pro
 	} else {
 
 		// 设置返回值
-		rep.NewId = newID
+		rep.NewID = newID
 	}
 	ctx, dbspan = jaeger.StartSpan(ctx, "Srv_UserGroup_Add_WriteDB_End")
 	if span != nil {
@@ -61,7 +61,7 @@ func (e *SrvUsersGroup) Add(ctx context.Context, req *proto.AddRequest, rep *pro
 	ctx, span = jaeger.StartSpan(ctx, "Srv_UserGroup_Add_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("NewId", rep.NewId)
+		span.SetTag("NewID", rep.NewID)
 	}
 
 	return nil
@@ -97,11 +97,11 @@ func (e *SrvUsersGroup) GetList(ctx context.Context, req *proto.GetListRequest, 
 		rep.TotalCount = totalcount
 		for _, v := range list {
 			rep.List = append(rep.List, &proto.UsersGroup{
-				Id:             int64(v.Id),
+				ID:             int64(v.ID),
 				Name:           v.Name,
 				Note:           v.Note,
 				Sorts:          int64(v.Sorts),
-				ParentId:       int64(v.ParentId),
+				ParentID:       int64(v.ParentID),
 				CreateTime:     v.CreateTime.Unix(),
 				LastUpdateTime: v.LastUpdateTime.Unix(),
 			})
@@ -136,22 +136,22 @@ func (e *SrvUsersGroup) Get(ctx context.Context, req *proto.GetRequest, rep *pro
 	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVUSERSGROUP
 
 	// 判断请求参数
-	if req.Id == 0 {
-		return errors.BadRequest(namespace_id, "Id 没有赋值")
+	if req.ID == 0 {
+		return errors.BadRequest(namespace_id, "ID 没有赋值")
 	}
 
-	cond := orm.NewCondition().And("id", req.Id)
+	cond := orm.NewCondition().And("id", req.ID)
 
 	// 根据 id 获取一个用户组
 	if modelUserGroup, err = new(models.UsersGroup).QueryOne(cond, "-id"); err != nil {
 		return errors.BadRequest(namespace_id, "models.UsersGroup QueryOne Error:%s", err.Error())
 	}
 	responseModel := &proto.UsersGroup{
-		Id:             int64(modelUserGroup.Id),
+		ID:             int64(modelUserGroup.ID),
 		Name:           modelUserGroup.Name,
 		Sorts:          int64(modelUserGroup.Sorts),
 		Note:           modelUserGroup.Note,
-		ParentId:       int64(modelUserGroup.ParentId),
+		ParentID:       int64(modelUserGroup.ParentID),
 		CreateTime:     modelUserGroup.CreateTime.Unix(),
 		LastUpdateTime: modelUserGroup.LastUpdateTime.Unix(),
 	}
@@ -183,19 +183,19 @@ func (e *SrvUsersGroup) Update(ctx context.Context, req *proto.UpdateRequest, re
 	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVUSERSGROUP
 
 	// 判断请求参数
-	if req.Model.Id == 0 {
+	if req.Model.ID == 0 {
 		return errors.BadRequest(namespace_id, "Id 不能为0")
 	}
 
 	// 根据 id 获取一个用户
-	if modelUserGroup, err = new(models.UsersGroup).GetOne(req.Model.Id); err != nil {
+	if modelUserGroup, err = new(models.UsersGroup).GetOne(req.Model.ID); err != nil {
 		return errors.BadRequest(namespace_id, "UpdateUserGroup GetOne Error:%s", err.Error())
 	}
 
-	modelUserGroup.Id = int(req.Model.Id)
+	modelUserGroup.ID = int(req.Model.ID)
 	modelUserGroup.Name = req.Model.Name
 	modelUserGroup.Sorts = int(req.Model.Sorts)
-	modelUserGroup.ParentId = int(req.Model.ParentId)
+	modelUserGroup.ParentID = int(req.Model.ParentID)
 	modelUserGroup.Note = req.Model.Note
 
 	// 修改用户

@@ -42,31 +42,31 @@ func (e *ApiUsers) Add(ctx context.Context, req *api.Request, rsp *api.Response)
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_API
+	namespaceID := inner.NAMESPACE_MICROSERVICE_API
 
 	// debug
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [Add] request", namespace_id)
+		inner.Mlogger.Infof("Received %s API [ApiUsers][Add] request", namespaceID)
 	}
 
 	// 获取请求参数 - 开始
 	var username, password, email, realyname, note string
 	if req.Post["UserName"] == nil || req.Post["UserName"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "UserName 不能为空")
+		return errors.InternalServerError(namespaceID, "UserName 不能为空")
 	} else {
 		username = req.Post["UserName"].Values[0]
 	}
 
 	if req.Post["PassWord"] == nil || req.Post["PassWord"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "PassWord 不能为空")
+		return errors.InternalServerError(namespaceID, "PassWord 不能为空")
 	} else {
 		password = req.Post["PassWord"].Values[0]
 	}
 
 	if req.Post["Email"] == nil || req.Post["Email"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "Email 不能为空")
+		return errors.InternalServerError(namespaceID, "Email 不能为空")
 	} else if err := checkmail.ValidateFormat(req.Post["Email"].Values[0]); err != nil {
-		return errors.InternalServerError(namespace_id, "Email 的格式不正确:%s", err.Error())
+		return errors.InternalServerError(namespaceID, "Email 的格式不正确:%s", err.Error())
 	} else {
 		email = req.Post["Email"].Values[0]
 	}
@@ -83,7 +83,7 @@ func (e *ApiUsers) Add(ctx context.Context, req *api.Request, rsp *api.Response)
 	// 生成加密盐 - 对密码加密
 	node, err := snowflake.NewNode(2)
 	if err != nil {
-		return errors.BadRequest(namespace_id, "snowflake.NewNode Error:%+v", err)
+		return errors.BadRequest(namespaceID, "snowflake.NewNode Error:%+v", err)
 	}
 	authKey := node.Generate()
 	password = commonutils.HexEncodeToString(commonutils.GetHMAC(commonutils.HashSHA256, []byte(password), authKey.Bytes()))
@@ -101,15 +101,15 @@ func (e *ApiUsers) Add(ctx context.Context, req *api.Request, rsp *api.Response)
 	// 调用服务端方法
 	response, err := e.Client.Add(ctx, &srvusers.AddRequest{Model: resUser})
 	if err != nil {
-		return errors.InternalServerError(namespace_id, err.Error())
+		return errors.InternalServerError(namespaceID, err.Error())
 	}
 
 	// 输出的 json
-	respJson := struct {
-		NewUserId int64
+	responseJSON := struct {
+		NewID int64 `json:"newid"`
 	}{}
-	respJson.NewUserId = response.NewUserId
-	b, _ := commonutils.JSONEncode(respJson)
+	responseJSON.NewID = response.NewID
+	b, _ := commonutils.JSONEncode(responseJSON)
 	rsp.StatusCode = 200
 	rsp.Body = string(b)
 
@@ -123,7 +123,7 @@ func (e *ApiUsers) Add(ctx context.Context, req *api.Request, rsp *api.Response)
 	ctx, span = jaeger.StartSpan(ctx, "Api_User_Add_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("NewUserId", response.NewUserId)
+		span.SetTag("NewID", response.NewID)
 	}
 
 	return nil
@@ -140,25 +140,25 @@ func (e *ApiUsers) GetList(ctx context.Context, req *api.Request, rsp *api.Respo
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_API
+	namespaceID := inner.NAMESPACE_MICROSERVICE_API
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [GetList] request", namespace_id)
+		inner.Mlogger.Infof("Received %s API [ApiUsers][GetList] request", namespaceID)
 	}
 
 	// 获取请求参数 - 开始
 	var pageSize, currentPageIndex int64
 	var orderBy string
 	if req.Get["PageSize"] == nil || req.Get["PageSize"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "PageSize 不能为空")
+		return errors.InternalServerError(namespaceID, "PageSize 不能为空")
 	} else if pageSize, err = commonutils.Int64FromString(req.Get["PageSize"].Values[0]); err != nil {
-		return errors.InternalServerError(namespace_id, "PageSize Format Error:%s", err.Error())
+		return errors.InternalServerError(namespaceID, "PageSize Format Error:%s", err.Error())
 	}
 
 	if req.Get["CurrentPageIndex"] == nil || req.Get["CurrentPageIndex"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "CurrentPageIndex 不能为空")
+		return errors.InternalServerError(namespaceID, "CurrentPageIndex 不能为空")
 	} else if currentPageIndex, err = commonutils.Int64FromString(req.Get["CurrentPageIndex"].Values[0]); err != nil {
-		return errors.InternalServerError(namespace_id, "CurrentPageIndex Format Error:%s", err.Error())
+		return errors.InternalServerError(namespaceID, "CurrentPageIndex Format Error:%s", err.Error())
 
 	}
 
@@ -174,7 +174,7 @@ func (e *ApiUsers) GetList(ctx context.Context, req *api.Request, rsp *api.Respo
 		OrderBy:          orderBy,
 	})
 	if err != nil {
-		return errors.InternalServerError(namespace_id, err.Error())
+		return errors.InternalServerError(namespaceID, err.Error())
 	}
 
 	// return json
@@ -219,18 +219,18 @@ func (e *ApiUsers) GetUser(ctx context.Context, req *api.Request, rsp *api.Respo
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_API
+	namespaceID := inner.NAMESPACE_MICROSERVICE_API
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [GetUser] request", namespace_id)
+		inner.Mlogger.Infof("Received %s API [ApiUsers][GetUser] request", namespaceID)
 	}
 
 	// 获取请求参数 - 开始
-	var userId int64
+	var ID int64
 	var userName string
-	if req.Get["UserId"] != nil && req.Get["UserId"].Values[0] != "0" {
-		if userId, err = commonutils.Int64FromString(req.Get["UserId"].Values[0]); err != nil {
-			return errors.InternalServerError(namespace_id, "UserId Format Error:%s", err.Error())
+	if req.Get["ID"] != nil && req.Get["ID"].Values[0] != "0" {
+		if ID, err = commonutils.Int64FromString(req.Get["ID"].Values[0]); err != nil {
+			return errors.InternalServerError(namespaceID, "ID Format Error:%s", err.Error())
 		}
 	}
 
@@ -242,11 +242,11 @@ func (e *ApiUsers) GetUser(ctx context.Context, req *api.Request, rsp *api.Respo
 
 	// 调用服务端方法
 	response, err := e.Client.Get(ctx, &srvusers.GetRequest{
-		UserId:   userId,
+		ID:       ID,
 		UserName: userName,
 	})
 	if err != nil {
-		return errors.InternalServerError(namespace_id, err.Error())
+		return errors.InternalServerError(namespaceID, err.Error())
 	}
 
 	// 对 json 序列化并输出
@@ -263,7 +263,7 @@ func (e *ApiUsers) GetUser(ctx context.Context, req *api.Request, rsp *api.Respo
 	ctx, span = jaeger.StartSpan(ctx, "Api_User_GetUser_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("UserId", userId)
+		span.SetTag("ID", ID)
 	}
 
 	return nil
@@ -280,22 +280,22 @@ func (e *ApiUsers) Update(ctx context.Context, req *api.Request, rsp *api.Respon
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_API
+	namespaceID := inner.NAMESPACE_MICROSERVICE_API
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [Update] request", namespace_id)
+		inner.Mlogger.Infof("Received %s API [ApiUsers][Update] request", namespaceID)
 	}
 
 	// 获取请求参数 - 开始
-	var userId int64
+	var ID int64
 	var username, password, email, realyname, note string
-	if req.Post["UserId"] == nil || req.Post["UserId"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "UserId 不能为空")
-	} else if userId, err = commonutils.Int64FromString(req.Post["UserId"].Values[0]); err != nil {
-		return errors.InternalServerError(namespace_id, "UserId Format Error:%s", err.Error())
+	if req.Post["ID"] == nil || req.Post["ID"].Values[0] == "" {
+		return errors.InternalServerError(namespaceID, "ID 不能为空")
+	} else if ID, err = commonutils.Int64FromString(req.Post["Id"].Values[0]); err != nil {
+		return errors.InternalServerError(namespaceID, "ID Format Error:%s", err.Error())
 	}
 	if req.Post["UserName"] == nil || req.Post["UserName"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "UserName 不能为空")
+		return errors.InternalServerError(namespaceID, "UserName 不能为空")
 	} else {
 		username = req.Post["UserName"].Values[0]
 	}
@@ -305,9 +305,9 @@ func (e *ApiUsers) Update(ctx context.Context, req *api.Request, rsp *api.Respon
 	}
 
 	if req.Post["Email"] == nil || req.Post["Email"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "Email 不能为空")
+		return errors.InternalServerError(namespaceID, "Email 不能为空")
 	} else if err := checkmail.ValidateFormat(req.Post["Email"].Values[0]); err != nil {
-		return errors.InternalServerError(namespace_id, "Email 的格式不正确:%s", err.Error())
+		return errors.InternalServerError(namespaceID, "Email 的格式不正确:%s", err.Error())
 	} else {
 		email = req.Post["Email"].Values[0]
 	}
@@ -323,10 +323,10 @@ func (e *ApiUsers) Update(ctx context.Context, req *api.Request, rsp *api.Respon
 
 	// 调用服务端方法获取用户
 	responseGetUser, err := e.Client.Get(ctx, &srvusers.GetRequest{
-		UserId: userId,
+		ID: ID,
 	})
 	if err != nil {
-		return errors.InternalServerError(namespace_id, err.Error())
+		return errors.InternalServerError(namespaceID, err.Error())
 	}
 
 	// 如果密码不为空，重新对密码加密
@@ -338,7 +338,7 @@ func (e *ApiUsers) Update(ctx context.Context, req *api.Request, rsp *api.Respon
 
 	// 调用服务端方法 - 修改用户
 	responseUpdateUser := &srvusers.User{
-		Id:             userId,
+		ID:             ID,
 		UserName:       username,
 		Password:       password,
 		RealyName:      realyname,
@@ -346,13 +346,13 @@ func (e *ApiUsers) Update(ctx context.Context, req *api.Request, rsp *api.Respon
 		Email:          email,
 		Note:           note,
 		IsDel:          responseGetUser.Model.IsDel,
-		ParentId:       responseGetUser.Model.ParentId,
+		ParentID:       responseGetUser.Model.ParentID,
 		CreateTime:     responseGetUser.Model.CreateTime,
 		LastUpdateTime: responseGetUser.Model.LastUpdateTime,
 	}
 	response, err := e.Client.Update(ctx, &srvusers.UpdateRequest{Model: responseUpdateUser})
 	if err != nil {
-		return errors.InternalServerError(namespace_id, err.Error())
+		return errors.InternalServerError(namespaceID, err.Error())
 	}
 
 	// 输出的 json
@@ -373,7 +373,7 @@ func (e *ApiUsers) Update(ctx context.Context, req *api.Request, rsp *api.Respon
 	ctx, span = jaeger.StartSpan(ctx, "Api_User_Update_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("UserId", userId)
+		span.SetTag("ID", ID)
 	}
 
 	return nil
@@ -390,37 +390,36 @@ func (e *ApiUsers) BatchDelete(ctx context.Context, req *api.Request, rsp *api.R
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_API
+	namespaceID := inner.NAMESPACE_MICROSERVICE_API
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [BatchDelete] request", namespace_id)
+		inner.Mlogger.Infof("Received %s API [ApiUsers][BatchDelete] request", namespaceID)
 	}
 
 	// 获取请求参数 - 开始
-	var userIdArray []string
-	if req.Post["UserIds"] == nil || req.Post["UserIds"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "UserIds 不能为空")
+	var IDArray []string
+	if req.Post["IDArray"] == nil || req.Post["IDArray"].Values[0] == "" {
+		return errors.InternalServerError(namespaceID, "IDArray 不能为空")
 	} else {
-		userIdArray = strings.Split(req.Post["UserIds"].Values[0], ",")
+		IDArray = strings.Split(req.Post["IDArray"].Values[0], ",")
 	}
 
-	fmt.Println("userIdArray", userIdArray)
 	// 获取请求参数 - 结束
 
 	// 调用服务端方法获取用户
 	response, err := e.Client.BatchDelete(ctx, &srvusers.DeleteRequest{
-		UserIdArray: userIdArray,
+		IDArray: IDArray,
 	})
 	if err != nil {
-		return errors.InternalServerError(namespace_id, err.Error())
+		return errors.InternalServerError(namespaceID, err.Error())
 	}
 
 	// 输出的 json
-	respJson := struct {
-		Deleted int64
+	responseJSON := struct {
+		Deleted int64 `json:"deleted"`
 	}{}
-	respJson.Deleted = response.Deleted
-	b, _ := commonutils.JSONEncode(respJson)
+	responseJSON.Deleted = response.Deleted
+	b, _ := commonutils.JSONEncode(responseJSON)
 	rsp.StatusCode = 200
 	rsp.Body = string(b)
 
@@ -433,7 +432,7 @@ func (e *ApiUsers) BatchDelete(ctx context.Context, req *api.Request, rsp *api.R
 	ctx, span = jaeger.StartSpan(ctx, "Api_User_BatchDelete_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("UserIdArray", strings.Join(userIdArray, ","))
+		span.SetTag("IDArray", strings.Join(IDArray, ","))
 	}
 
 	return nil
@@ -450,46 +449,46 @@ func (e *ApiUsers) UserLogin(ctx context.Context, req *api.Request, rsp *api.Res
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_API
+	namespaceID := inner.NAMESPACE_MICROSERVICE_API
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [UserLogin] request", namespace_id)
+		inner.Mlogger.Infof("Received %s API [ApiUsers][UserLogin] request", namespaceID)
 	}
 
 	// 获取请求参数 -------------------- 开始
 	var userName, password, deviceDetector, geoRemoteAddr, geoCountry, geoCity string
 	if req.Post["UserName"] == nil || req.Post["UserName"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "UserName 不能为空")
+		return errors.InternalServerError(namespaceID, "UserName 不能为空")
 	} else {
 		userName = req.Post["UserName"].Values[0]
 	}
 
 	if req.Post["PassWord"] == nil || req.Post["PassWord"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "PassWord 不能为空")
+		return errors.InternalServerError(namespaceID, "PassWord 不能为空")
 	} else {
 		password = req.Post["PassWord"].Values[0]
 	}
 
 	if req.Post["DeviceDetector"] == nil || req.Post["DeviceDetector"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "DeviceDetector 不能为空")
+		return errors.InternalServerError(namespaceID, "DeviceDetector 不能为空")
 	} else {
 		deviceDetector = req.Post["DeviceDetector"].Values[0]
 	}
 
 	if req.Post["GeoRemoteAddr"] == nil || req.Post["GeoRemoteAddr"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "GeoRemoteAddr 不能为空")
+		return errors.InternalServerError(namespaceID, "GeoRemoteAddr 不能为空")
 	} else {
 		geoRemoteAddr = req.Post["GeoRemoteAddr"].Values[0]
 	}
 
 	if req.Post["GeoCountry"] == nil || req.Post["GeoCountry"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "GeoCountry 不能为空")
+		return errors.InternalServerError(namespaceID, "GeoCountry 不能为空")
 	} else {
 		geoCountry = req.Post["GeoCountry"].Values[0]
 	}
 
 	if req.Post["GeoCity"] == nil || req.Post["GeoCity"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "GeoCity 不能为空")
+		return errors.InternalServerError(namespaceID, "GeoCity 不能为空")
 	} else {
 		geoCity = req.Post["GeoCity"].Values[0]
 	}
@@ -501,18 +500,18 @@ func (e *ApiUsers) UserLogin(ctx context.Context, req *api.Request, rsp *api.Res
 	})
 	if err != nil {
 		if commonutils.StringContains(err.Error(), "no row found") {
-			return errors.InternalServerError(namespace_id, "用户不存在")
+			return errors.InternalServerError(namespaceID, "用户不存在")
 		} else {
-			return errors.InternalServerError(namespace_id, err.Error())
+			return errors.InternalServerError(namespaceID, err.Error())
 		}
 	}
 
 	if commonutils.HexEncodeToString(commonutils.GetHMAC(commonutils.HashSHA256, []byte(password), []byte(response.Model.AuthKey))) != response.Model.Password {
-		return errors.InternalServerError(namespace_id, "密码不正确")
+		return errors.InternalServerError(namespaceID, "密码不正确")
 	}
 
 	// 记录登录历史 -------------------- 开始
-	srvhistoryuser := &srvusers.User{Id: response.Model.Id}
+	srvhistoryuser := &srvusers.User{ID: response.Model.ID}
 	if _, err := e.ClientHistory.Add(ctx, &srvhistoryuserlogin.AddRequest{
 		User:           srvhistoryuser,
 		DeviceDetector: deviceDetector,
@@ -520,18 +519,18 @@ func (e *ApiUsers) UserLogin(ctx context.Context, req *api.Request, rsp *api.Res
 		GeoCountry:     geoCountry,
 		GeoCity:        geoCity,
 	}); err != nil {
-		return errors.InternalServerError(namespace_id, "ClientHistory.Add Error:%s", err.Error())
+		return errors.InternalServerError(namespaceID, "ClientHistory.Add Error:%s", err.Error())
 	}
 	// 记录登录历史 -------------------- 结束
 
 	// 写入 JWT
 	timeDuration := time.Duration(time.Minute * 10) //10分钟后过期
 	mapClaims := jwt.MapClaims{
-		"UserId":         strconv.FormatInt(response.Model.Id, 10),
+		"UserId":         strconv.FormatInt(response.Model.ID, 10),
 		"ExpirationDate": time.Now().Add(timeDuration).Format("2006-01-02 15:04:05"),
 	}
 	if tokenString, err = encrypt.JWTEncrypt(mapClaims); err != nil {
-		return errors.InternalServerError(namespace_id, "token.SignedString Error:%s", err.Error())
+		return errors.InternalServerError(namespaceID, "token.SignedString Error:%s", err.Error())
 	} else {
 		// 输出的 json
 		respJson := struct {
@@ -568,17 +567,17 @@ func (e *ApiUsers) ValidToken(ctx context.Context, req *api.Request, rsp *api.Re
 	// 	defer span.Finish()
 	// }
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_API
+	namespaceID := inner.NAMESPACE_MICROSERVICE_API
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [ValidToken] request", namespace_id)
+		inner.Mlogger.Infof("Received %s API [ApiUsers][ValidToken] request", namespaceID)
 	}
 
 	// 获取请求参数 -------------------- 开始
 	var tokenString string
 	var updateExpirationDate bool // 是否更新token过期时间
 	if req.Post["Token"] == nil || req.Post["Token"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "Token 不能为空")
+		return errors.InternalServerError(namespaceID, "Token 不能为空")
 	} else {
 		tokenString = req.Post["Token"].Values[0]
 	}
@@ -591,11 +590,11 @@ func (e *ApiUsers) ValidToken(ctx context.Context, req *api.Request, rsp *api.Re
 	var expirationDate time.Time
 	var mapClaims jwt.MapClaims
 	if mapClaims, err = encrypt.JWTDecrypt(tokenString); err != nil {
-		return errors.InternalServerError(namespace_id, fmt.Sprintf("JWTDecrypt Error:%s", err.Error()))
+		return errors.InternalServerError(namespaceID, fmt.Sprintf("JWTDecrypt Error:%s", err.Error()))
 	}
 	fmt.Println("mapClaims", mapClaims)
 	if expirationDate, err = time.ParseInLocation("2006-01-02 15:04:05", mapClaims["ExpirationDate"].(string), time.Local); err != nil {
-		return errors.InternalServerError(namespace_id, fmt.Sprintf("ExpirationDate ParseInLocation Error:%s", err.Error()))
+		return errors.InternalServerError(namespaceID, fmt.Sprintf("ExpirationDate ParseInLocation Error:%s", err.Error()))
 	}
 
 	// 输出的 json
@@ -628,7 +627,7 @@ func (e *ApiUsers) ValidToken(ctx context.Context, req *api.Request, rsp *api.Re
 			"ExpirationDate": time.Now().Add(timeDuration),
 		}
 		if tokenString, err = encrypt.JWTEncrypt(mapClaims); err != nil {
-			return errors.InternalServerError(namespace_id, "token.SignedString Error:%s", err.Error())
+			return errors.InternalServerError(namespaceID, "token.SignedString Error:%s", err.Error())
 		} else {
 			rsp.StatusCode = 200
 			rsp.Body = tokenString

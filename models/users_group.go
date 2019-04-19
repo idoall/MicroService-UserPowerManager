@@ -11,9 +11,9 @@ import (
 )
 
 type UsersGroup struct {
-	Id             int       `orm:"column(id);auto"`
+	ID             int       `orm:"column(id);auto"`
 	Name           string    `orm:"column(name);size(200);null" description:"用户组名称"`
-	ParentId       int       `orm:"column(parent_id)" description:"所属上级Id"`
+	ParentID       int       `orm:"column(parent_id)" description:"所属上级Id"`
 	Sorts          int       `orm:"column(sorts)" description:"排序"`
 	Note           string    `orm:"column(note);size(2000);null" description:"备注"`
 	CreateTime     time.Time `orm:"column(create_time);type(datetime)"`
@@ -50,7 +50,7 @@ func (e *UsersGroup) GetChildIdArray(id int64) ([]int64, error) {
 	}
 	result := []int64{}
 	for _, v := range list {
-		result = append(result, int64(v.Id))
+		result = append(result, int64(v.ID))
 	}
 	return result, nil
 }

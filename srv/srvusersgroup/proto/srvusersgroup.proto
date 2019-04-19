@@ -18,11 +18,11 @@ service SrvUsersGroup {
 
 
 message UsersGroup {
-	int64 Id = 1;
+	int64 ID = 1;
 	// 用户组名称
 	string Name = 2;
 	// 所属组Id
-	int64 ParentId = 3;
+	int64 ParentID = 3;
 	// 排序
 	int64 Sorts = 4;
 	// 备注
@@ -38,7 +38,7 @@ message AddRequest {
 }
 
 message AddResponse {
-	int64 NewId = 1;
+	int64 NewID = 1;
 }
 
 message GetListRequest{
@@ -53,7 +53,7 @@ message GetListResponse{
 }
 
 message GetRequest {
-	int64 Id = 1;
+	int64 ID = 1;
 }
 
 message GetResponse {

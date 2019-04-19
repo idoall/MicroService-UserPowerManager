@@ -20,5 +20,5 @@ message AddRequest {
 }
 
 message AddResponse {
-	int64 NewId = 1;
+	int64 NewID = 1;
 }

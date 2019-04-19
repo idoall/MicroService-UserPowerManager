@@ -15,7 +15,7 @@ type Users struct {
 	// 用户Id
 	// required: false
 	// Read Only
-	Id int `orm:"column(id);auto" description:"编号Id"`
+	ID int `orm:"column(id);auto" description:"编号Id"`
 	// 用户名称
 	// required: true
 	// min length: 3
@@ -35,7 +35,7 @@ type Users struct {
 	// swagger:ignore
 	IsDel          bool      `orm:"column(is_del);null" description:"是否删除：1、true 0、false"`
 	Note           string    `orm:"column(note);null" description:"加入时间"`
-	ParentId       int       `orm:"column(parent_id)"`
+	ParentID       int       `orm:"column(parent_id)"`
 	CreateTime     time.Time `orm:"column(create_time);type(datetime)"`
 	LastUpdateTime time.Time `orm:"column(last_update_time);type(datetime);null" description:"最后更新时间"`
 }
@@ -71,7 +71,7 @@ func (e *Users) GetChildIdArray(id int64) ([]int64, error) {
 	}
 	result := []int64{}
 	for _, v := range list {
-		result = append(result, int64(v.Id))
+		result = append(result, int64(v.ID))
 	}
 	return result, nil
 }

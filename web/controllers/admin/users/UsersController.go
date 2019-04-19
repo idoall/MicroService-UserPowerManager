@@ -31,7 +31,7 @@ func (e *UsersController) GetListJSON() {
 	// return json
 	jsonList := struct {
 		Rows []struct {
-			Id             int64  `json:"Id"`
+			ID             int64  `json:"ID"`
 			UserName       string `json:"UserName"`
 			RealyName      string `json:"RealyName"`
 			Password       string `json:"Password"`
@@ -152,11 +152,11 @@ func (e *UsersController) AddSave() {
 	path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::ServiceURL_User_Add"))
 
 	// 临时 Json解析类
-	responseJson := struct {
-		NewUserId int64
+	responseJSON := struct {
+		NewID int64 `json:"newid"`
 	}{}
 	// 发送 http 请求
-	if err = request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJson, false, true, false); err != nil {
+	if err = request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJSON, false, true, false); err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
 		e.Data["json"] = result
@@ -164,7 +164,7 @@ func (e *UsersController) AddSave() {
 		return
 	} else {
 		result.Code = 0
-		result.Msg = "添加成功, 用户ID:" + strconv.FormatInt(responseJson.NewUserId, 10)
+		result.Msg = "添加成功, 用户ID:" + strconv.FormatInt(responseJSON.NewID, 10)
 		e.Data["json"] = result
 		e.ServeJSON()
 	}
@@ -188,7 +188,7 @@ func (e *UsersController) Update() {
 
 	// 拼接要发送的url参数
 	params := url.Values{}
-	params.Set("UserId", strconv.FormatInt(userId, 10))
+	params.Set("ID", strconv.FormatInt(userId, 10))
 
 	// 发送请求的路径
 	path := fmt.Sprintf("%s%s?%s",
@@ -242,7 +242,7 @@ func (e *UsersController) UpdateSave() {
 
 	// 拼接要发送的url参数
 	params := url.Values{}
-	params.Set("UserId", strconv.FormatInt(userId, 10))
+	params.Set("ID", strconv.FormatInt(userId, 10))
 	params.Set("UserName", e.GetString("username"))
 	params.Set("PassWord", e.GetString("password"))
 	params.Set("RealyName", e.GetString("username"))
@@ -252,12 +252,12 @@ func (e *UsersController) UpdateSave() {
 	// 发送请求的路径
 	path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::ServiceURL_User_Update"))
 
-	// 临时 Json解析类
-	responseJson := struct {
-		UpdateUserId int64
+	// 临时 Json 解析类
+	responseJSON := struct {
+		Updated int64
 	}{}
 	// 发送 http 请求
-	if err = request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJson, false, true, false); err != nil {
+	if err = request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJSON, false, true, false); err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
 		e.Data["json"] = result
@@ -273,15 +273,15 @@ func (e *UsersController) Delete() {
 	// 用于 json 返回的数据
 	var result models.Result
 	var err error
-	var userId int64
+	var userID int64
 
-	if userId, err = e.GetInt64("id", 0); err != nil {
+	if userID, err = e.GetInt64("id", 0); err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
 		e.Data["json"] = result
 		e.ServeJSON()
 		return
-	} else if userId == 0 {
+	} else if userID == 0 {
 		result.Code = -1
 		result.Msg = fmt.Sprintf("id不能为0")
 		e.Data["json"] = result
@@ -291,17 +291,17 @@ func (e *UsersController) Delete() {
 
 	// 拼接要发送的url参数
 	params := url.Values{}
-	params.Set("UserIds", strconv.FormatInt(userId, 10))
+	params.Set("UserIds", strconv.FormatInt(userID, 10))
 
 	// 发送请求的路径
 	path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::ServiceURL_User_BatchDelete"))
 
 	// 临时 Json解析类
-	responseJson := struct {
+	responseJSON := struct {
 		Deleted int64
 	}{}
 	// 发送 http 请求
-	if err = request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJson, false, true, false); err != nil {
+	if err = request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJSON, false, true, false); err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
 		e.Data["json"] = result
@@ -330,7 +330,7 @@ func (e *UsersController) BatchDelete() {
 
 	// 拼接要发送的url参数
 	params := url.Values{}
-	params.Set("UserIds", userIds)
+	params.Set("IDArray", userIds)
 	fmt.Println(params.Encode())
 
 	// 发送请求的路径

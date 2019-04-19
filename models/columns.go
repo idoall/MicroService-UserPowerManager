@@ -11,10 +11,10 @@ import (
 )
 
 type Columns struct {
-	Id             int       `orm:"column(id);auto"`
+	ID             int       `orm:"column(id);auto"`
 	Name           string    `orm:"column(name);size(200)" description:"栏目名称"`
 	URL            string    `orm:"column(URL);size(500);null" description:"URL"`
-	ParentId       int       `orm:"column(parent_id)" description:"所属上级Id"`
+	ParentID       int       `orm:"column(parent_id)" description:"所属上级Id"`
 	Sorts          int       `orm:"column(sorts)" description:"排序"`
 	IsShowNav      bool      `orm:"column(is_show_nav)" description:"是否显示在导航"`
 	CssIcon        string    `orm:"column(css_icon);size(50);null" description:"css图标样式"`
@@ -52,7 +52,7 @@ func (e *Columns) GetChildIdArray(id int64) ([]int64, error) {
 	}
 	result := []int64{}
 	for _, v := range list {
-		result = append(result, int64(v.Id))
+		result = append(result, int64(v.ID))
 	}
 	return result, nil
 }
