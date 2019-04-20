@@ -26,7 +26,11 @@ export MICROSERVICE_HOSTPORT=http://localhost:8080
 docker-compose -f docker-compose-dev.yml up
 ```
 
->#####3.配置goland中run configure
-![run configure](dev-goland.png)
+>#####3.安装运行micro
+```bash
+micro --registry consul --registry_address 127.0.0.1:8500 api --handler=api
+```
 
+>#####4.配置goland中run configure
+![run configure](dev-goland.png)
 >Done
