@@ -19,6 +19,7 @@ import (
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers/siteauth"
 
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin"
+	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin/columns"
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin/users"
 
 	"github.com/astaxie/beego/context"
@@ -30,6 +31,9 @@ func init() {
 
 	// 注册用户模块
 	routerUserModel := &users.UsersController{}
+	// 注册栏目模块
+	routerColumnsModel := &columns.ColumnsController{}
+	// 注册登录、退出模块
 	routerSiteAuthModel := &siteauth.SiteAuthController{}
 
 	beego.Get("/ping", func(ctx *context.Context) {
@@ -53,7 +57,7 @@ func init() {
 		}),
 		// admin 后台
 		beego.NSNamespace(fmt.Sprintf("/%s", admin.TemplageAdminBaseURL),
-			beego.NSBefore(filterAdminUserLoginGateWay), //权限验证
+			// beego.NSBefore(filterAdminUserLoginGateWay), //权限验证
 			// 用户管理
 			beego.NSNamespace(fmt.Sprintf("/%s", users.TemplageBaseURL),
 				// 首页，默认调用 Get 方法
@@ -70,8 +74,25 @@ func init() {
 				beego.NSRouter("/updatesave", routerUserModel, "*:UpdateSave"),
 				// 删除用户
 				beego.NSRouter("/delete", routerUserModel, "*:Delete"),
-				// 指删除用户
+				// 批量删除用户
 				beego.NSRouter("/batchdelete", routerUserModel, "*:BatchDelete"),
+			),
+			// 栏目管理
+			beego.NSNamespace(fmt.Sprintf("/%s", columns.TemplageBaseURL),
+				// 首页，默认调用 Get 方法
+				beego.NSRouter("/", routerColumnsModel),
+				// 获取JSON列表
+				beego.NSRouter("/GetTreeViewJSON", routerColumnsModel, "*:GetTreeViewJSON"),
+				// 添加
+				beego.NSRouter("/add", routerColumnsModel, "*:Add"),
+				// 添加 - 保存
+				beego.NSRouter("/addsave", routerColumnsModel, "*:AddSave"),
+				// 修改
+				beego.NSRouter("/update", routerColumnsModel, "*:Update"),
+				// 修改 - 保存
+				beego.NSRouter("/updatesave", routerColumnsModel, "*:UpdateSave"),
+				// 批量删除
+				beego.NSRouter("/batchdelete", routerColumnsModel, "*:BatchDelete"),
 			),
 		),
 

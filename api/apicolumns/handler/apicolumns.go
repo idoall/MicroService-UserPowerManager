@@ -166,11 +166,26 @@ func (e *ApiColumns) GetList(ctx context.Context, req *api.Request, rsp *api.Res
 	}
 
 	// return json
+
 	responseJSON := struct {
-		Rows  []*srvProto.Columns `json:"rows"`
-		Total int64               `json:"total"`
+		Rows  []*responseJSONRow `json:"rows"`
+		Total int64              `json:"total"`
 	}{}
-	responseJSON.Rows = srvResponse.List
+	for _, v := range srvResponse.List {
+		r := &responseJSONRow{
+			ID:             v.ID,
+			Name:           v.Name,
+			URL:            v.URL,
+			ParentID:       v.ParentID,
+			Sorts:          v.Sorts,
+			IsShowNav:      v.IsShowNav,
+			CssIcon:        v.CssIcon,
+			CreateTime:     v.CreateTime,
+			LastUpdateTime: v.LastUpdateTime,
+		}
+		responseJSON.Rows = append(responseJSON.Rows, r)
+	}
+
 	responseJSON.Total = srvResponse.TotalCount
 
 	// 对 json 序列化并输出
@@ -231,7 +246,17 @@ func (e *ApiColumns) Get(ctx context.Context, req *api.Request, rsp *api.Respons
 	}
 
 	// 对 json 序列化并输出
-	b, _ := json.Marshal(srvrResponse)
+	b, _ := json.Marshal(&responseJSONRow{
+		ID:             srvrResponse.Model.ID,
+		Name:           srvrResponse.Model.Name,
+		URL:            srvrResponse.Model.URL,
+		ParentID:       srvrResponse.Model.ParentID,
+		Sorts:          srvrResponse.Model.Sorts,
+		IsShowNav:      srvrResponse.Model.IsShowNav,
+		CssIcon:        srvrResponse.Model.CssIcon,
+		CreateTime:     srvrResponse.Model.CreateTime,
+		LastUpdateTime: srvrResponse.Model.LastUpdateTime,
+	})
 	rsp.StatusCode = 200
 	rsp.Body = string(b)
 
@@ -412,4 +437,17 @@ func (e *ApiColumns) BatchDelete(ctx context.Context, req *api.Request, rsp *api
 	}
 
 	return nil
+}
+
+// 这里重点讲一下，proto自动生成的每一个字段都会加上omitempty，当ParentID和Sorts为0时，会不显示该字段。所以重新转义
+type responseJSONRow struct {
+	ID             int64  `json:"ID"`
+	Name           string `json:"Name"`
+	URL            string `json:"URL"`
+	ParentID       int64  `json:"ParentID"`
+	Sorts          int64  `json:"Sorts"`
+	IsShowNav      bool   `json:"IsShowNav"`
+	CssIcon        string `json:"CssIcon"`
+	CreateTime     int64  `json:"CreateTime"`
+	LastUpdateTime int64  `json:"LastUpdateTime"`
 }

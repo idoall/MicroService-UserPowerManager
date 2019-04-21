@@ -19,9 +19,11 @@ type UsersController struct {
 	admin.AdminBaseController
 }
 
-var TemplageBaseURL = "users"
-var baseTitle = "用户"
-var pageSizeDefault = 11
+var (
+	TemplageBaseURL = "users"
+	baseTitle       = "用户"
+	pageSizeDefault = 11
+)
 
 // GetListJSON Default Json
 func (e *UsersController) GetListJSON() {

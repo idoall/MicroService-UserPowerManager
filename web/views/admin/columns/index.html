@@ -1,0 +1,312 @@
+<div class="wrapper wrapper-content animated fadeInRight">
+
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>{{.title}}</h5>
+                    <div class="ibox-tools">
+                        <a class="collapse-link">
+                            <i class="fa fa-chevron-up"></i>
+                        </a>
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="table_basic.html#">
+                            <i class="fa fa-wrench"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-user">
+                            <li>
+                                <a href="{{.AddUrl}}">添加</a>
+                            </li>
+                        </ul>
+                        <a class="close-link">
+                            <i class="fa fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="ibox-content">
+                    <div class="row">
+                        <div class="col-sm-4 m-b-xs">
+                            <div data-toggle="buttons" class="btn-group">
+                                <button onclick='javascript:window.location.href="{{str2html .AddUrl}}";' class="btn btn-primary" type="button">
+                                    <i class="fa fa-plus"></i>
+                                    <span class="bold">添加</span>
+                                </button>
+                            </div>
+                            <div data-toggle="buttons" class="btn-group">
+                                <button id="update" class="btn btn-primary" type="button">
+                                    <i class="fa fa-pencil"></i>
+                                    <span class="bold">修改</span>
+                                </button>
+                            </div>
+                            <div data-toggle="buttons" class="btn-group">
+                                <button id="batchDelete" class="btn btn-warning" type="button">
+                                    <i class="fa fa-remove"></i>
+                                    <span class="bold">批量删除</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="ibox-content">
+
+                    <!-- Example Large Columns -->
+
+                    <div id="treeview">
+                    </div>
+                    <!-- End Example Large Columns -->
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+function FColumnPower(name) {
+    'use strict';
+    this.ObjName = name;
+    this.QueryUrl = '{{.JSONTreeViewListUrl}}';
+    this.TreeViewObject = null;
+    this.TreeViewNodeCheckedSilent = false;
+    this.TreeViewNodeUncheckedSilent = false;
+    this.Init();
+}
+FColumnPower.prototype.Init = function () {
+    this.InitTreeView();
+    this.InitEvent();
+}
+
+FColumnPower.prototype.InitEvent = function () {
+    var obj = this;
+    //批量删除
+    $('#batchDelete').click(obj.BatchOnDelete);
+    //修改
+    $('#update').click(obj.OnUpdate);
+}
+//修改事件
+FColumnPower.prototype.OnUpdate = function () {
+    var obj = ColumnPower;
+    var checkList = obj.TreeViewObject.treeview('getChecked');
+
+    if (checkList.length == 0 || checkList.length>1) {
+        swal({
+            title: "错误提示",
+            text: "请选择一条记录或只能选择一条记录。"
+        });
+        return;
+    }
+    window.location.href = "{{.UpdateUrl}}"+checkList[0].id;
+}
+//批量删除事件
+FColumnPower.prototype.BatchOnDelete = function () {
+    var obj = ColumnPower;
+    var checkList = obj.TreeViewObject.treeview('getChecked');
+
+    if (checkList.length == 0) {
+        swal({
+            title: "错误提示",
+            text: "请选择一条记录。"
+        });
+        return;
+    }
+
+    //递归检测子节点是否被选中的方法
+    var CheckChildNodeIsNoChecked = function (list) {
+        for (var i = 0; i < list.length; i++) {
+            item = list[i];
+            if (!item.state.checked) {
+                return false;
+            }
+            if (item.nodes != null) {
+                return CheckChildNodeIsNoChecked(item.nodes);
+            }
+        }
+        return true;
+    }
+
+    var childNodeIsNoChecked = false;
+    for (var i = 0; i < checkList.length; i++) {
+        item = checkList[i];
+        if (item.nodes != null && !CheckChildNodeIsNoChecked(item.nodes)) {
+            swal({
+                title: "错误提示",
+                text: "有子节点未被选中，不能直接删除父节点。"
+            });
+            return;
+        }
+    }
+
+    var idArray = []
+    for (var i = 0; i < checkList.length; i++) {
+        idArray.push(checkList[i].id)
+    }
+
+    var Confirmation_ok = function () {
+        $.ajax({
+            url: '{{.BatchDelUrl}}',
+            data: { ids: idArray.join(',') },
+            type: 'post',
+            cache: false,
+            dataType: 'json',
+            success: function (data) {
+                if (data.code != 0) {
+                    swal("错误提示", data.msg);
+                } else {
+                    // console.log(data.code)
+                    window.location.href = window.location.href;
+                }
+            },
+            error: function () { console.log('异常请求') }
+        });
+    };
+    
+	swal("您确定要删除这些信息吗?","删除后将无法恢复，请谨慎操作！", "warning", {
+		buttons: {
+			cancel: "取消",
+			defeat: "确定",
+		},
+		}).then((value) => {
+		switch (value) {
+			case "defeat":
+				Confirmation_ok();
+				break;
+			default:
+				swal.close();
+		}
+	});
+
+}
+
+FColumnPower.prototype.InitTreeView = function () {
+    var obj = this;
+    $.ajax({
+        url: this.QueryUrl,
+        data: {  },
+        type: 'post',
+        cache: false,
+        dataType: 'json',
+        success: function (data) {
+            obj.TreeViewObject = $(obj.ObjName).treeview({
+                color: "#428bca",
+                levels: 5,
+                enableLinks: false,
+                showTags:true,
+                checkedIcon:"glyphicon glyphicon-check",
+                showIcon: false,
+                //nodeIcon: "glyphicon glyphicon-user",
+                showCheckbox: true,   //是否显示复选框
+                emptyIcon: '',    //没有子节点的节点图标
+                //multiSelect: true,    //多选
+               // onNodeChecked: obj.TreeViewOnChecked,
+                //onNodeUnchecked: obj.TreeViewOnUnChecked,
+                data: data
+            });
+        },
+        error: function () { console.log('异常请求') }
+    });
+}
+
+
+/**
+ * TreeView 节点被选中时调用的事件
+ */
+ FColumnPower.prototype.TreeViewOnChecked = function (event, node) {
+    obj = ColumnPower;
+    if(obj.TreeViewNodeCheckedSilent){return;}
+    obj.TreeViewNodeCheckedSilent = true;
+    obj.TreeViewCheckAllParent(node);
+    obj.TreeViewCheckAllSon(node);
+    obj.TreeViewNodeCheckedSilent = false;
+}
+
+/**
+ * TreeView 节点被取消选中时调用的事件
+ */
+FColumnPower.prototype.TreeViewOnUnChecked = function (event, node) {
+    obj = ColumnPower;
+    if(obj.TreeViewNodeUncheckedSilent){return;}
+    obj.TreeViewNodeUncheckedSilent = true;
+    obj.TreeViewUnCheckAllParent(node);
+    obj.TreeViewUnCheckAllSon(node);
+    obj.TreeViewNodeUncheckedSilent = false;
+}
+
+/**
+ * TreeView 选中所有父级节占
+ */
+ FColumnPower.prototype.TreeViewCheckAllParent = function (node) {
+    obj = ColumnPower;
+    obj.TreeViewObject.treeview('checkNode',node.nodeId,{silent:true});
+    var parentNode = obj.TreeViewObject.treeview('getParent',node.nodeId);
+    if(!("nodeId" in parentNode)){
+        return;
+    }else{
+        obj.TreeViewCheckAllParent(parentNode);
+    }
+}
+
+/**
+ * TreeView 取消所有父级选中状态
+ */
+ FColumnPower.prototype.TreeViewUnCheckAllParent = function (node) {
+    obj = ColumnPower;
+    obj.TreeViewObject.treeview('uncheckNode',node.nodeId,{silent:true});
+    var siblings = obj.TreeViewObject.treeview('getSiblings', node.nodeId);
+    var parentNode = obj.TreeViewObject.treeview('getParent',node.nodeId);
+    if(!("nodeId" in parentNode)) {
+        return;
+    }
+    var isAllUnchecked = true;  //是否全部没选中
+    for(var i in siblings){
+        if(siblings[i].state.checked){
+            isAllUnchecked=false;
+            break;
+        }
+    }
+    if(isAllUnchecked){
+        obj.TreeViewUnCheckAllParent(parentNode);
+    }
+}
+
+/**
+ * TreeView 选中所有子级节点
+ */
+ FColumnPower.prototype.TreeViewCheckAllSon = function (node) {
+    obj = ColumnPower;
+    obj.TreeViewObject.treeview('checkNode', node.nodeId, {
+        silent: true
+    });
+    if (node.nodes != null && node.nodes.length > 0) {
+        for (var i in node.nodes) {
+            obj.TreeViewCheckAllSon(node.nodes[i]);
+        }
+    }
+}
+
+
+/**
+ * TreeView 取消选中所有子级节点
+ */
+ FColumnPower.prototype.TreeViewUnCheckAllSon = function (node) {
+    obj = ColumnPower;
+    obj.TreeViewObject.treeview('uncheckNode', node.nodeId, {
+        silent: true
+    });
+    if (node.nodes != null && node.nodes.length > 0) {
+        for (var i in node.nodes) {
+            obj.TreeViewUnCheckAllSon(node.nodes[i]);
+        }
+    }
+}
+/**
+* 页面初始化
+*/
+$(document).ready(function () {
+if (typeof window.ColumnPower == 'undefined') {
+    window.ColumnPower = new FColumnPower('#treeview')
+}
+});
+</script>

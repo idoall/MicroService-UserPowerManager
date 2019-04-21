@@ -23,22 +23,22 @@ func (e *SrvColumns) Add(ctx context.Context, req *proto.AddRequest, rep *proto.
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVCOLUMNS
+	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVCOLUMNS
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s Service [Add] request", namespace_id)
+		inner.Mlogger.Infof("Received %s Service [SrvColumns][Add] request", namespaceID)
 	}
 
 	if req.Model.Name == "" {
-		return errors.BadRequest(namespace_id, "Name 不能为空")
+		return errors.BadRequest(namespaceID, "Name 不能为空")
 	}
 
 	// 创建结构
 	model := new(models.Columns)
 	model.Name = req.Model.Name
 	model.URL = req.Model.URL
-	model.ParentID = int(req.Model.ParentID)
-	model.Sorts = int(req.Model.Sorts)
+	model.ParentID = req.Model.ParentID
+	model.Sorts = req.Model.Sorts
 	model.IsShowNav = req.Model.IsShowNav
 	model.CssIcon = req.Model.CssIcon
 
@@ -48,7 +48,7 @@ func (e *SrvColumns) Add(ctx context.Context, req *proto.AddRequest, rep *proto.
 		defer dbspan.Finish()
 	}
 	if newID, err := model.Add(model); err != nil {
-		return errors.BadRequest(namespace_id, "添加到数据库失败:%s", err.Error())
+		return errors.BadRequest(namespaceID, "添加到数据库失败:%s", err.Error())
 	} else {
 
 		// 设置返回值
@@ -77,33 +77,37 @@ func (e *SrvColumns) GetList(ctx context.Context, req *proto.GetListRequest, rep
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVCOLUMNS
+	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVCOLUMNS
+
+	if utils.RunMode == "dev" {
+		inner.Mlogger.Infof("Received %s Service [SrvColumns][GetList] request", namespaceID)
+	}
 
 	// 判断请求参数
 	if req.PageSize == 0 {
-		return errors.BadRequest(namespace_id, "PageSize 不能为0")
+		return errors.BadRequest(namespaceID, "PageSize 不能为0")
 	}
 
 	if req.CurrentPageIndex == 0 {
-		return errors.BadRequest(namespace_id, "CurrentPageIndex 不能0")
+		return errors.BadRequest(namespaceID, "CurrentPageIndex 不能0")
 	}
-	orderBy := "-id"
+	orderBy := "-sorts"
 	if req.OrderBy != "" {
 		orderBy = req.OrderBy
 	}
 
 	cond := orm.NewCondition()
 	if list, totalcount, err := new(models.Columns).GetAll(cond, int(req.PageSize), int(req.CurrentPageIndex), orderBy); err != nil {
-		return errors.BadRequest(namespace_id, "Model.Columns GetAll Error:%s", err.Error())
+		return errors.BadRequest(namespaceID, "Model.Columns GetAll Error:%s", err.Error())
 	} else {
 		rep.TotalCount = totalcount
 		for _, v := range list {
 			rep.List = append(rep.List, &proto.Columns{
-				ID:             int64(v.ID),
+				ID:             v.ID,
 				Name:           v.Name,
 				URL:            v.URL,
-				Sorts:          int64(v.Sorts),
-				ParentID:       int64(v.ParentID),
+				Sorts:          v.Sorts,
+				ParentID:       v.ParentID,
 				IsShowNav:      v.IsShowNav,
 				CssIcon:        v.CssIcon,
 				CreateTime:     v.CreateTime.Unix(),
@@ -137,18 +141,18 @@ func (e *SrvColumns) Get(ctx context.Context, req *proto.GetRequest, rep *proto.
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVCOLUMNS
+	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVCOLUMNS
 
 	// 判断请求参数
 	if req.ID == 0 {
-		return errors.BadRequest(namespace_id, "Id 没有赋值")
+		return errors.BadRequest(namespaceID, "Id 没有赋值")
 	}
 
 	cond := orm.NewCondition().And("id", req.ID)
 
 	// 根据 id 获取一个栏目
 	if modelGet, err = new(models.Columns).QueryOne(cond, "-id"); err != nil {
-		return errors.BadRequest(namespace_id, "models.Columns QueryOne Error:%s", err.Error())
+		return errors.BadRequest(namespaceID, "models.Columns QueryOne Error:%s", err.Error())
 	}
 	responseModel := &proto.Columns{
 		ID:             int64(modelGet.ID),
@@ -186,29 +190,29 @@ func (e *SrvColumns) Update(ctx context.Context, req *proto.UpdateRequest, rep *
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVCOLUMNS
+	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVCOLUMNS
 
 	// 判断请求参数
 	if req.Model.ID == 0 {
-		return errors.BadRequest(namespace_id, "ID 不能为0")
+		return errors.BadRequest(namespaceID, "ID 不能为0")
 	}
 
 	// 根据 id 获取一个栏目
 	if modelGet, err = new(models.Columns).GetOne(req.Model.ID); err != nil {
-		return errors.BadRequest(namespace_id, "Update Columns GetOne Error:%s", err.Error())
+		return errors.BadRequest(namespaceID, "Update Columns GetOne Error:%s", err.Error())
 	}
 
-	modelGet.ID = int(req.Model.ID)
+	modelGet.ID = req.Model.ID
 	modelGet.Name = req.Model.Name
-	modelGet.Sorts = int(req.Model.Sorts)
-	modelGet.ParentID = int(req.Model.ParentID)
+	modelGet.Sorts = req.Model.Sorts
+	modelGet.ParentID = req.Model.ParentID
 	modelGet.URL = req.Model.URL
 	modelGet.IsShowNav = req.Model.IsShowNav
 	modelGet.CssIcon = req.Model.CssIcon
 
 	// 修改
 	if ok, err := modelGet.Update(modelGet); err != nil {
-		return errors.BadRequest(namespace_id, "Update Columns Update Error:%s", err.Error())
+		return errors.BadRequest(namespaceID, "Update Columns Update Error:%s", err.Error())
 	} else {
 		rep.Updated = ok
 	}
@@ -237,16 +241,16 @@ func (e *SrvColumns) BatchDelete(ctx context.Context, req *proto.DeleteRequest, 
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVCOLUMNS
+	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVCOLUMNS
 
 	// 判断请求参数
-	if len(req.IdArray) == 0 {
-		return errors.BadRequest(namespace_id, "IdArray 长度不能为0")
+	if len(req.IDArray) == 0 {
+		return errors.BadRequest(namespaceID, "IDArray 长度不能为0")
 	}
 
 	// 批量删除
-	if _, err = new(models.Columns).BatchDelete(req.IdArray); err != nil {
-		return errors.BadRequest(namespace_id, "BatchDelete Columns Error:%s", err.Error())
+	if _, err = new(models.Columns).BatchDelete(req.IDArray); err != nil {
+		return errors.BadRequest(namespaceID, "BatchDelete Columns Error:%s", err.Error())
 	} else {
 		rep.Deleted = 1
 	}
@@ -255,7 +259,7 @@ func (e *SrvColumns) BatchDelete(ctx context.Context, req *proto.DeleteRequest, 
 	ctx, span = jaeger.StartSpan(ctx, "Srv_Columns_BatchDelete_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("UserIdArray", strings.Join(req.IdArray, ","))
+		span.SetTag("IDArray", strings.Join(req.IDArray, ","))
 	}
 
 	return nil

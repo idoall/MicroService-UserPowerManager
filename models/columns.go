@@ -11,15 +11,16 @@ import (
 )
 
 type Columns struct {
-	ID             int       `orm:"column(id);auto"`
-	Name           string    `orm:"column(name);size(200)" description:"栏目名称"`
-	URL            string    `orm:"column(URL);size(500);null" description:"URL"`
-	ParentID       int       `orm:"column(parent_id)" description:"所属上级Id"`
-	Sorts          int       `orm:"column(sorts)" description:"排序"`
-	IsShowNav      bool      `orm:"column(is_show_nav)" description:"是否显示在导航"`
-	CssIcon        string    `orm:"column(css_icon);size(50);null" description:"css图标样式"`
-	CreateTime     time.Time `orm:"column(create_time);type(datetime)"`
-	LastUpdateTime time.Time `orm:"column(last_update_time);type(datetime);null" description:"最后更新时间"`
+	ID             int64      `orm:"column(id);auto"`
+	Name           string     `orm:"column(name);size(200)" description:"栏目名称"`
+	URL            string     `orm:"column(URL);size(500);null" description:"URL"`
+	ParentID       int64      `orm:"column(parent_id)" description:"所属上级Id"`
+	Sorts          int64      `orm:"column(sorts)" description:"排序"`
+	IsShowNav      bool       `orm:"column(is_show_nav)" description:"是否显示在导航"`
+	CssIcon        string     `orm:"column(css_icon);size(50);null" description:"css图标样式"`
+	Nodes          []*Columns `orm:"-" json:"nodes"` //下属节点集合
+	CreateTime     time.Time  `orm:"column(create_time);type(datetime)"`
+	LastUpdateTime time.Time  `orm:"column(last_update_time);type(datetime);null" description:"最后更新时间"`
 }
 
 func (t *Columns) TableName() string {
@@ -131,3 +132,43 @@ func (e *Columns) BatchDelete(id []string) (sql.Result, error) {
 	sql := fmt.Sprintf("DELETE FROM %s WHERE id IN (%s)", e.TableName(), strings.Join(id, ","))
 	return e.RawSQL(sql)
 }
+
+// GetTreeViewBootstrap GetTreeViewBootstrap
+// func (e *Columns) GetTreeViewBootstrap() ([]*TreeView, error) {
+// 	// 根据 sorts获取所有集合倒排序
+// 	list, _, err := e.GetAll(orm.NewCondition(), 1000, 1, "-sorts")
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	var returnlist []*TreeView
+// 	for _, v := range list {
+// 		// 取出 Id 为0的
+// 		if v.ParentID == 0 {
+// 			t := &TreeView{
+// 				ID:   v.ID,
+// 				Text: v.Name,
+// 				Href: v.URL,
+// 				Tags: []string{fmt.Sprintf("%d", v.ID), v.URL, fmt.Sprintf("Sort:%d", v.Sort), fmt.Sprintf("IsShowNav:%t", v.IsShowNav)},
+// 			}
+// 			e.generateRecursiveTreeViewBootstrap(v, t, list)
+// 			returnlist = append(returnlist, t)
+// 		}
+// 	}
+// 	return returnlist, nil
+// }
+
+// func (e *Columns) generateRecursiveTreeViewBootstrap(m *ColumnPower, t *TreeView, list []*ColumnPower) {
+
+// 	for _, v := range list {
+// 		if v.ParentID == m.ID {
+// 			tr := &TreeView{
+// 				ID:   v.ID,
+// 				Text: v.Name,
+// 				Href: v.URL,
+// 				Tags: []string{fmt.Sprintf("%d", v.ID), v.URL, fmt.Sprintf("Sort:%d", v.Sort), fmt.Sprintf("IsShowNav:%t", v.IsShowNav)},
+// 			}
+// 			t.Nodes = append(t.Nodes, tr)
+// 			e.generateRecursiveTreeViewBootstrap(v, tr, list)
+// 		}
+// 	}
+// }

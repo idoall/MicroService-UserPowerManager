@@ -27,7 +27,9 @@ $ micro --registry=mdns api --address=:8080  --handler=api
 # 测试方法
 ```
 # Post 方法，添加用户
-$ curl -XPOST -H 'Content-Type: application/x-www-form-urlencoded' -d 'UserName=This is a Name&PassWord=123password' --url http://localhost:8080/mshk/api/v1/ApiUsers/add
+$ curl -XPOST -H 'Content-Type: application/x-www-form-urlencoded' \
+      -d 'UserName=This is a Name&PassWord=123password' \
+      --url http://localhost:8080/mshk/api/v1/ApiUsers/add
 {"id":"go.micro.api.mshk.api.v1","code":500,"detail":"Email 不能为空","status":"Internal Server Error"}
 
 # Get 方法，获取用户列表

@@ -37,6 +37,7 @@ message Columns {
 	int64 CreateTime = 8;
 	// 最后是错新时间
 	int64 LastUpdateTime = 9;
+	// repeated Columns Nodes = 10;
 }
 
 message AddRequest {
