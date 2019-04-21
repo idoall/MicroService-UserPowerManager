@@ -25,7 +25,7 @@ var (
 )
 
 // 返回版本号+admin拼接的url
-func (e *AdminBaseController) GetVersionAdminURL() string {
+func (e *AdminBaseController) GetVersionAdminBaseURL() string {
 	return fmt.Sprintf("/%s/%s", AdminBaseRoterVersion, TemplageAdminBaseURL)
 }
 

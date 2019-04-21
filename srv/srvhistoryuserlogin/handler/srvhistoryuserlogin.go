@@ -3,12 +3,12 @@ package handler
 import (
 	"context"
 
-	"github.com/micro/go-micro/errors"
 	"github.com/idoall/MicroService-UserPowerManager/models"
 	proto "github.com/idoall/MicroService-UserPowerManager/srv/srvhistoryuserlogin/proto"
 	"github.com/idoall/MicroService-UserPowerManager/utils"
 	"github.com/idoall/MicroService-UserPowerManager/utils/inner"
 	"github.com/idoall/MicroService-UserPowerManager/utils/jaeger"
+	"github.com/micro/go-micro/errors"
 )
 
 type SrvHistoryUserLogin struct{}
@@ -27,8 +27,8 @@ func (e *SrvHistoryUserLogin) Add(ctx context.Context, req *proto.AddRequest, re
 		inner.Mlogger.Infof("Received %s Service [Add] request", namespace_id)
 	}
 
-	if req.User.Id == 0 {
-		return errors.BadRequest(namespace_id, "User.Id 不能为0")
+	if req.User.ID == 0 {
+		return errors.BadRequest(namespace_id, "User.ID 不能为0")
 	}
 
 	if req.GeoRemoteAddr == "" {
@@ -49,7 +49,7 @@ func (e *SrvHistoryUserLogin) Add(ctx context.Context, req *proto.AddRequest, re
 
 	// 创建数据库记录
 	model := new(models.HistoryUserLogin)
-	model.User = &models.Users{Id: int(req.User.Id)}
+	model.User = &models.Users{ID: int(req.User.ID)}
 	model.GeoRemoteAddr = req.GeoRemoteAddr
 	model.GeoCountry = req.GeoCountry
 	model.GeoCity = req.GeoCity
@@ -65,7 +65,7 @@ func (e *SrvHistoryUserLogin) Add(ctx context.Context, req *proto.AddRequest, re
 	} else {
 
 		// 设置返回值
-		rep.NewId = newID
+		rep.NewID = newID
 	}
 	ctx, dbspan = jaeger.StartSpan(ctx, "Srv_HistoryUserLogin_Add_WriteDB_End")
 	if span != nil {
@@ -76,7 +76,7 @@ func (e *SrvHistoryUserLogin) Add(ctx context.Context, req *proto.AddRequest, re
 	ctx, span = jaeger.StartSpan(ctx, "Srv_HistoryUserLogin_Add_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("NewId", rep.NewId)
+		span.SetTag("NewId", rep.NewID)
 		span.SetTag("GeoRemoteAddr", req.GeoRemoteAddr)
 		span.SetTag("GeoCountry", req.GeoCountry)
 		span.SetTag("GeoCity", req.GeoCity)

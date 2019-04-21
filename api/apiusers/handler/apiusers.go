@@ -32,7 +32,6 @@ type ApiUsers struct {
 	ClientHistory srvhistoryuserlogin.SrvHistoryUserLoginService
 }
 
-// swagger:route POST /mshk/api/v1/ApiUsers/add users addPet
 // 添加一个用户
 func (e *ApiUsers) Add(ctx context.Context, req *api.Request, rsp *api.Response) error {
 
@@ -288,10 +287,10 @@ func (e *ApiUsers) Update(ctx context.Context, req *api.Request, rsp *api.Respon
 
 	// 获取请求参数 - 开始
 	var ID int64
-	var username, password, email, realyname, note string
+	var username, password, email, realyname, note, authKey string
 	if req.Post["ID"] == nil || req.Post["ID"].Values[0] == "" {
 		return errors.InternalServerError(namespaceID, "ID 不能为空")
-	} else if ID, err = commonutils.Int64FromString(req.Post["Id"].Values[0]); err != nil {
+	} else if ID, err = commonutils.Int64FromString(req.Post["ID"].Values[0]); err != nil {
 		return errors.InternalServerError(namespaceID, "ID Format Error:%s", err.Error())
 	}
 	if req.Post["UserName"] == nil || req.Post["UserName"].Values[0] == "" {
@@ -331,9 +330,16 @@ func (e *ApiUsers) Update(ctx context.Context, req *api.Request, rsp *api.Respon
 
 	// 如果密码不为空，重新对密码加密
 	if password != "" {
-		password = commonutils.HexEncodeToString(commonutils.GetHMAC(commonutils.HashSHA256, []byte(password), []byte(responseGetUser.Model.AuthKey)))
+		// 重置加密盐 - 对密码加密
+		node, err := snowflake.NewNode(2)
+		if err != nil {
+			return errors.BadRequest(namespaceID, "snowflake.NewNode Error:%+v", err)
+		}
+		authKey = node.Generate().String()
+		password = commonutils.HexEncodeToString(commonutils.GetHMAC(commonutils.HashSHA256, []byte(password), []byte(authKey)))
 	} else {
 		password = responseGetUser.Model.Password
+		authKey = responseGetUser.Model.AuthKey
 	}
 
 	// 调用服务端方法 - 修改用户
@@ -342,7 +348,7 @@ func (e *ApiUsers) Update(ctx context.Context, req *api.Request, rsp *api.Respon
 		UserName:       username,
 		Password:       password,
 		RealyName:      realyname,
-		AuthKey:        responseGetUser.Model.AuthKey,
+		AuthKey:        authKey,
 		Email:          email,
 		Note:           note,
 		IsDel:          responseGetUser.Model.IsDel,

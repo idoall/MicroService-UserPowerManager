@@ -35,7 +35,7 @@ func main() {
 	service.Server().Handle(
 		service.Server().NewHandler(
 			&handler.ApiUsers{
-				ClientUser:    srvusers.NewSrvUsersService(inner.NAMESPACE_MICROSERVICE_SRVUSERS, service.Client()),
+				Client:        srvusers.NewSrvUsersService(inner.NAMESPACE_MICROSERVICE_SRVUSERS, service.Client()),
 				ClientHistory: srvhistoryuserlogin.NewSrvHistoryUserLoginService(inner.NAMESPACE_MICROSERVICE_SRVHISTORYUSERLOGIN, service.Client()),
 			},
 		),

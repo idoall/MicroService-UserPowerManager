@@ -89,7 +89,7 @@ func (e *UsersController) GetListJSON() {
 func (e *UsersController) Get() {
 
 	//set Data
-	versionAdminURL := e.GetVersionAdminURL()
+	versionAdminURL := e.GetVersionAdminBaseURL()
 	e.Data["title"] = fmt.Sprintf("%s管理", baseTitle)
 	e.Data["AddUrl"] = fmt.Sprintf("%s/%s/add", versionAdminURL, TemplageBaseURL)
 	e.Data["UpdateUrl"] = fmt.Sprintf("%s/%s/update?id=", versionAdminURL, TemplageBaseURL)
@@ -117,7 +117,7 @@ func (e *UsersController) Get() {
 
 // Add 添加用户
 func (e *UsersController) Add() {
-	versionAdminURL := e.GetVersionAdminURL()
+	versionAdminURL := e.GetVersionAdminBaseURL()
 	e.Data["title"] = fmt.Sprintf("添加%s", baseTitle)
 	e.Data["DefaultUrl"] = fmt.Sprintf("%s/%s", versionAdminURL, TemplageBaseURL)
 	e.Data["AddSaveUrl"] = fmt.Sprintf("%s/%s/addsave", versionAdminURL, TemplageBaseURL)
@@ -198,7 +198,7 @@ func (e *UsersController) Update() {
 	)
 
 	// 临时 Json解析类
-	var responseJson interface{}
+	var responseJson map[string]interface{}
 	// 发送 http 请求
 	if err = request.Request.SendPayload("GET", path, nil, nil, &responseJson, false, true, false); err != nil {
 		result.Code = -1
@@ -207,11 +207,11 @@ func (e *UsersController) Update() {
 		e.ServeJSON()
 		return
 	} else {
-		e.Data["Model"] = responseJson
+		e.Data["Model"] = responseJson["Model"]
 	}
 
 	//set Data
-	versionAdminURL := e.GetVersionAdminURL()
+	versionAdminURL := e.GetVersionAdminBaseURL()
 	e.Data["title"] = fmt.Sprintf("修改%s", baseTitle)
 	e.Data["UpdateSaveUrl"] = fmt.Sprintf("%s/%s/updatesave", versionAdminURL, TemplageBaseURL)
 
@@ -264,7 +264,7 @@ func (e *UsersController) UpdateSave() {
 		e.ServeJSON()
 		return
 	} else {
-		e.Ctx.Redirect(302, fmt.Sprintf("/%s/%s", admin.AdminBaseRoterVersion, TemplageBaseURL))
+		e.Ctx.Redirect(302, fmt.Sprintf("%s/%s", e.GetVersionAdminBaseURL(), TemplageBaseURL))
 	}
 }
 
@@ -291,7 +291,7 @@ func (e *UsersController) Delete() {
 
 	// 拼接要发送的url参数
 	params := url.Values{}
-	params.Set("UserIds", strconv.FormatInt(userID, 10))
+	params.Set("IDArray", strconv.FormatInt(userID, 10))
 
 	// 发送请求的路径
 	path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::ServiceURL_User_BatchDelete"))
@@ -308,7 +308,7 @@ func (e *UsersController) Delete() {
 		e.ServeJSON()
 		return
 	} else {
-		e.Ctx.Redirect(302, fmt.Sprintf("/%s/%s", admin.AdminBaseRoterVersion, TemplageBaseURL))
+		e.Ctx.Redirect(302, fmt.Sprintf("%s/%s", e.GetVersionAdminBaseURL(), TemplageBaseURL))
 	}
 }
 
