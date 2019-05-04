@@ -15,22 +15,22 @@ import (
 
 type SrvUsersGroup struct{}
 
-// 添加一个用户组
+// Add 添加一个用户组
 func (e *SrvUsersGroup) Add(ctx context.Context, req *proto.AddRequest, rep *proto.AddResponse) error {
 	// 写入一个 jaeger span
-	ctx, span := jaeger.StartSpan(ctx, "Srv_UserGroup_Add_Begin")
+	ctx, span := jaeger.StartSpan(ctx, "Srv_UsersGroup_Add_Begin")
 	if span != nil {
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVUSERSGROUP
+	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVUSERSGROUP
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s Service [Add] request", namespace_id)
+		inner.Mlogger.Infof("Received %s Service [UsersGroup][Add] request", namespaceID)
 	}
 
 	if req.Model.Name == "" {
-		return errors.BadRequest(namespace_id, "Name 不能为空")
+		return errors.BadRequest(namespaceID, "Name 不能为空")
 	}
 
 	// 创建结构
@@ -41,24 +41,24 @@ func (e *SrvUsersGroup) Add(ctx context.Context, req *proto.AddRequest, rep *pro
 	model.Note = req.Model.Note
 
 	// 添加用户组
-	ctx, dbspan := jaeger.StartSpan(ctx, "Srv_UserGroup_Add_WriteDB_Begin")
+	ctx, dbspan := jaeger.StartSpan(ctx, "Srv_UsersGroup_Add_WriteDB_Begin")
 	if span != nil {
 		defer dbspan.Finish()
 	}
 	if newID, err := model.Add(model); err != nil {
-		return errors.BadRequest(namespace_id, "添加用户组失败:%s", err.Error())
+		return errors.BadRequest(namespaceID, "添加用户组失败:%s", err.Error())
 	} else {
 
 		// 设置返回值
 		rep.NewID = newID
 	}
-	ctx, dbspan = jaeger.StartSpan(ctx, "Srv_UserGroup_Add_WriteDB_End")
+	ctx, dbspan = jaeger.StartSpan(ctx, "Srv_UsersGroup_Add_WriteDB_End")
 	if span != nil {
 		defer dbspan.Finish()
 	}
 
 	// 写入一个 jaeger span
-	ctx, span = jaeger.StartSpan(ctx, "Srv_UserGroup_Add_End")
+	ctx, span = jaeger.StartSpan(ctx, "Srv_UsersGroup_Add_End")
 	if span != nil {
 		defer span.Finish()
 		span.SetTag("NewID", rep.NewID)
@@ -67,23 +67,26 @@ func (e *SrvUsersGroup) Add(ctx context.Context, req *proto.AddRequest, rep *pro
 	return nil
 }
 
-// 获取用户组列表,默认 id 倒排序
+// GetList 获取用户组列表,默认 id 倒排序
 func (e *SrvUsersGroup) GetList(ctx context.Context, req *proto.GetListRequest, rep *proto.GetListResponse) error {
 	// 写入一个 jaeger span
-	ctx, span := jaeger.StartSpan(ctx, "Srv_UserGroup_GetList_Begin")
+	ctx, span := jaeger.StartSpan(ctx, "Srv_UsersGroup_GetList_Begin")
 	if span != nil {
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVUSERSGROUP
+	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVUSERSGROUP
+	if utils.RunMode == "dev" {
+		inner.Mlogger.Infof("Received %s Service [UsersGroup][GetList] request", namespaceID)
+	}
 
 	// 判断请求参数
 	if req.PageSize == 0 {
-		return errors.BadRequest(namespace_id, "PageSize 不能为0")
+		return errors.BadRequest(namespaceID, "PageSize 不能为0")
 	}
 
 	if req.CurrentPageIndex == 0 {
-		return errors.BadRequest(namespace_id, "CurrentPageIndex 不能0")
+		return errors.BadRequest(namespaceID, "CurrentPageIndex 不能0")
 	}
 	orderBy := "-id"
 	if req.OrderBy != "" {
@@ -92,7 +95,7 @@ func (e *SrvUsersGroup) GetList(ctx context.Context, req *proto.GetListRequest, 
 
 	cond := orm.NewCondition()
 	if list, totalcount, err := new(models.UsersGroup).GetAll(cond, int(req.PageSize), int(req.CurrentPageIndex), orderBy); err != nil {
-		return errors.BadRequest(namespace_id, "Model.UsersGroup GetAll Error:%s", err.Error())
+		return errors.BadRequest(namespaceID, "Model.UsersGroup GetAll Error:%s", err.Error())
 	} else {
 		rep.TotalCount = totalcount
 		for _, v := range list {
@@ -109,7 +112,7 @@ func (e *SrvUsersGroup) GetList(ctx context.Context, req *proto.GetListRequest, 
 	}
 
 	// 写入一个 jaeger span
-	ctx, span = jaeger.StartSpan(ctx, "Srv_UserGroup_GetList_End")
+	ctx, span = jaeger.StartSpan(ctx, "Srv_UsersGroup_GetList_End")
 	if span != nil {
 		defer span.Finish()
 		span.SetTag("PageSize", req.PageSize)
@@ -125,44 +128,44 @@ func (e *SrvUsersGroup) GetList(ctx context.Context, req *proto.GetListRequest, 
 func (e *SrvUsersGroup) Get(ctx context.Context, req *proto.GetRequest, rep *proto.GetResponse) error {
 
 	var err error
-	var modelUserGroup *models.UsersGroup
+	var modelUsersGroup *models.UsersGroup
 
 	// 写入一个 jaeger span
-	ctx, span := jaeger.StartSpan(ctx, "Srv_UserGroup_GetUser_Begin")
+	ctx, span := jaeger.StartSpan(ctx, "Srv_UsersGroup_GetUser_Begin")
 	if span != nil {
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVUSERSGROUP
+	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVUSERSGROUP
 
 	// 判断请求参数
 	if req.ID == 0 {
-		return errors.BadRequest(namespace_id, "ID 没有赋值")
+		return errors.BadRequest(namespaceID, "ID 没有赋值")
 	}
 
 	cond := orm.NewCondition().And("id", req.ID)
 
 	// 根据 id 获取一个用户组
-	if modelUserGroup, err = new(models.UsersGroup).QueryOne(cond, "-id"); err != nil {
-		return errors.BadRequest(namespace_id, "models.UsersGroup QueryOne Error:%s", err.Error())
+	if modelUsersGroup, err = new(models.UsersGroup).QueryOne(cond, "-id"); err != nil {
+		return errors.BadRequest(namespaceID, "models.UsersGroup QueryOne Error:%s", err.Error())
 	}
 	responseModel := &proto.UsersGroup{
-		ID:             int64(modelUserGroup.ID),
-		Name:           modelUserGroup.Name,
-		Sorts:          int64(modelUserGroup.Sorts),
-		Note:           modelUserGroup.Note,
-		ParentID:       int64(modelUserGroup.ParentID),
-		CreateTime:     modelUserGroup.CreateTime.Unix(),
-		LastUpdateTime: modelUserGroup.LastUpdateTime.Unix(),
+		ID:             int64(modelUsersGroup.ID),
+		Name:           modelUsersGroup.Name,
+		Sorts:          int64(modelUsersGroup.Sorts),
+		Note:           modelUsersGroup.Note,
+		ParentID:       int64(modelUsersGroup.ParentID),
+		CreateTime:     modelUsersGroup.CreateTime.Unix(),
+		LastUpdateTime: modelUsersGroup.LastUpdateTime.Unix(),
 	}
 
 	rep.Model = responseModel
 
 	// 写入一个 jaeger span
-	ctx, span = jaeger.StartSpan(ctx, "Srv_UserGroup_GetUser_End")
+	ctx, span = jaeger.StartSpan(ctx, "Srv_UsersGroup_GetUser_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("Id", req.Id)
+		span.SetTag("Id", req.ID)
 	}
 
 	return nil
@@ -172,41 +175,41 @@ func (e *SrvUsersGroup) Get(ctx context.Context, req *proto.GetRequest, rep *pro
 func (e *SrvUsersGroup) Update(ctx context.Context, req *proto.UpdateRequest, rep *proto.UpdateResponse) error {
 
 	var err error
-	var modelUserGroup *models.UsersGroup
+	var modelUsersGroup *models.UsersGroup
 
 	// 写入一个 jaeger span
-	ctx, span := jaeger.StartSpan(ctx, "Srv_UserGroup_UpdateUser_Begin")
+	ctx, span := jaeger.StartSpan(ctx, "Srv_UsersGroup_UpdateUser_Begin")
 	if span != nil {
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVUSERSGROUP
+	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVUSERSGROUP
 
 	// 判断请求参数
 	if req.Model.ID == 0 {
-		return errors.BadRequest(namespace_id, "Id 不能为0")
+		return errors.BadRequest(namespaceID, "Id 不能为0")
 	}
 
 	// 根据 id 获取一个用户
-	if modelUserGroup, err = new(models.UsersGroup).GetOne(req.Model.ID); err != nil {
-		return errors.BadRequest(namespace_id, "UpdateUserGroup GetOne Error:%s", err.Error())
+	if modelUsersGroup, err = new(models.UsersGroup).GetOne(req.Model.ID); err != nil {
+		return errors.BadRequest(namespaceID, "UpdateUsersGroup GetOne Error:%s", err.Error())
 	}
 
-	modelUserGroup.ID = int(req.Model.ID)
-	modelUserGroup.Name = req.Model.Name
-	modelUserGroup.Sorts = int(req.Model.Sorts)
-	modelUserGroup.ParentID = int(req.Model.ParentID)
-	modelUserGroup.Note = req.Model.Note
+	modelUsersGroup.ID = int(req.Model.ID)
+	modelUsersGroup.Name = req.Model.Name
+	modelUsersGroup.Sorts = int(req.Model.Sorts)
+	modelUsersGroup.ParentID = int(req.Model.ParentID)
+	modelUsersGroup.Note = req.Model.Note
 
 	// 修改用户
-	if ok, err := modelUserGroup.Update(modelUserGroup); err != nil {
-		return errors.BadRequest(namespace_id, "UpdateUser Update Error:%s", err.Error())
+	if ok, err := modelUsersGroup.Update(modelUsersGroup); err != nil {
+		return errors.BadRequest(namespaceID, "UpdateUser Update Error:%s", err.Error())
 	} else {
 		rep.Updated = ok
 	}
 
 	// 写入一个 jaeger span
-	ctx, span = jaeger.StartSpan(ctx, "Srv_UserGroup_UpdateUser_End")
+	ctx, span = jaeger.StartSpan(ctx, "Srv_UsersGroup_UpdateUser_End")
 	if span != nil {
 		defer span.Finish()
 		span.SetTag("Updated", rep.Updated)
@@ -222,27 +225,27 @@ func (e *SrvUsersGroup) BatchDelete(ctx context.Context, req *proto.DeleteReques
 	// var modelUser *models.Users
 
 	// 写入一个 jaeger span
-	ctx, span := jaeger.StartSpan(ctx, "Srv_UserGroup_BatchDelete_Begin")
+	ctx, span := jaeger.StartSpan(ctx, "Srv_UsersGroup_BatchDelete_Begin")
 	if span != nil {
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_SRVUSERSGROUP
+	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVUSERSGROUP
 
 	// 判断请求参数
 	if len(req.IdArray) == 0 {
-		return errors.BadRequest(namespace_id, "IdArray 长度不能为0")
+		return errors.BadRequest(namespaceID, "IdArray 长度不能为0")
 	}
 
 	// 批量删除用户
 	if _, err = new(models.UsersGroup).BatchDelete(req.IdArray); err != nil {
-		return errors.BadRequest(namespace_id, "BatchDelete UserGroup Error:%s", err.Error())
+		return errors.BadRequest(namespaceID, "BatchDelete UsersGroup Error:%s", err.Error())
 	} else {
 		rep.Deleted = 1
 	}
 
 	// 写入一个 jaeger span
-	ctx, span = jaeger.StartSpan(ctx, "Srv_UserGroup_BatchDelete_End")
+	ctx, span = jaeger.StartSpan(ctx, "Srv_UsersGroup_BatchDelete_End")
 	if span != nil {
 		defer span.Finish()
 		span.SetTag("UserIdArray", strings.Join(req.IdArray, ","))

@@ -1,0 +1,333 @@
+
+<div class="wrapper wrapper-content animated fadeInRight">
+
+	<div class="row">
+		<div class="col-sm-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<h5>{{.title}}</h5>
+					<div class="ibox-tools">
+						<a class="collapse-link">
+							<i class="fa fa-chevron-up"></i>
+						</a>
+						<a class="dropdown-toggle" data-toggle="dropdown" href="table_basic.html#">
+							<i class="fa fa-wrench"></i>
+						</a>
+						<ul class="dropdown-menu dropdown-user">
+							<li>
+								<a href="{{.URL_Add}}">添加</a>
+							</li>
+						</ul>
+						<a class="close-link">
+							<i class="fa fa-times"></i>
+						</a>
+					</div>
+				</div>
+				<div class="ibox-content">
+					<div class="row">
+						<div class="col-sm-4 m-b-xs">
+							<div data-toggle="buttons" class="btn-group">
+								<button id="ID_Add" class="btn btn-primary" type="button">
+									<i class="fa fa-plus"></i>
+									<span class="bold">添加</span>
+								</button>
+							</div>
+							
+							<div data-toggle="buttons" class="btn-group">
+								<button id="ID_BatchDelete" class="btn btn-warning" type="button">
+									<i class="fa fa-remove"></i>
+									<span class="bold">批量删除</span>
+								</button>
+							</div>
+						</div>
+
+					</div>
+
+				</div>
+				<div class="ibox-content">
+
+					<!-- Example Large Columns -->
+
+					<table id="table" data-mobile-responsive="true">
+					</table>
+					<!-- End Example Large Columns -->
+
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>
+<script>
+
+	function FUserGroup(tableName) {
+		'use strict';
+		this.TableName = tableName;
+		this.QueryUrl = '{{.URL_JsonListUrl}}';
+		this.PageSize = 50;
+		this.Table = null;
+		
+		//
+		this.BtnAdd = $("#ID_Add");
+		this.BtnBatchDelete = $("#ID_BatchDelete");
+	}
+	FUserGroup.prototype.Init = function () {
+		var obj = UserGroup;
+
+		// 点击事件 --  批量删除
+		obj.BtnBatchDelete.click(obj.OnClick_BatchDelete);
+		obj.BtnAdd.click(obj.OnClick_Add);
+
+
+		obj.InitMainTable();
+	}
+
+	/**
+	 * 初始化Table
+	*/
+	FUserGroup.prototype.InitMainTable = function () {
+		var obj = UserGroup;
+		obj.Table = $(obj.TableName).bootstrapTable({
+			url: obj.QueryUrl,                      //请求后台的URL（*）
+			method: 'GET',                      //请求方式（*）
+			//toolbar: '#toolbar',              //工具按钮用哪个容器
+			striped: true,                      //是否显示行间隔色
+			cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+			pagination: true,                   //是否显示分页（*）
+			sortable: false,                     //是否启用排序
+			dataType: "json",
+			// sortOrder: "asc",                   //排序方式
+			sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+			pageNumber: 1,                      //初始化加载第一页，默认第一页,并记录
+			pageSize: this.PageSize,                     //每页的记录行数（*）
+			pageList: [10, 25, 50, 100, 150, 200],        //可供选择的每页的行数（*）
+			search: false,                      //是否显示表格搜索
+			// strictSearch: true,
+			// showColumns: true,                  //是否显示所有的列（选择显示的列）
+			// showRefresh: true,                  //是否显示刷新按钮
+			// minimumCountColumns: 2,             //最少允许的列数
+			clickToSelect: true,                //是否启用点击选中行
+			height: $(window).height() - 150,                      //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+			uniqueId: "ID",                     //每一行的唯一标识，一般为主键列
+			showToggle: false,                   //是否显示详细视图和列表视图的切换按钮
+			cardView: false,                    //是否显示详细视图
+			paginationLoop: false,
+			// detailView: false,                  //是否显示父子表
+			// //得到查询的参数
+			queryParams: function (params) {
+	
+				//这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
+				var temp = {
+					pagesize: params.limit,                         //页面大小
+					currentpage: (params.offset / params.limit) + 1   //页码
+				};
+				return temp;
+			},
+			columns: [{
+				checkbox: true,
+				visible: true                  //是否显示复选框  
+			}, {
+				field: 'ID',
+				title: 'ID',
+			}, {
+				field: 'Name',
+				title: '用户组名称',
+			}, {
+				field: 'ParentID',
+				title: '所属用户组',
+			}, {
+				field: 'Sorts',
+				title: '排序',
+			}, {
+				field: 'Note',
+				title: '备注',
+			}, {
+                field: 'CreateTime',
+                title: '加入时间',
+                formatter: this.FormatterCreateTime
+            }, {
+                field: 'LastUpdateTime',
+                title: '更新时间',
+                formatter: this.FormatterLastUpdateTimeTime
+            }, {
+				field: '',
+				title: '操作',
+				width: 120,
+				align: 'center',
+				valign: 'middle',
+				formatter: this.ActionFormatter
+			}],
+			onLoadSuccess: function () {
+			},
+			onLoadError: function () {
+				showTips("数据加载失败！");
+			},
+			onDblClickRow: function (row, $element) {
+				var id = row.ID;
+				console.log(id, 'view');
+			},
+		});
+	}
+    FUserGroup.prototype.FormatterCreateTime = function (value, row, index) {
+	    return new Date(row.CreateTime*1000).Format("yyyy-MM-dd HH:mm:ss");
+    }
+    FUserGroup.prototype.FormatterLastUpdateTimeTime = function (value, row, index) {
+        return new Date(row.LastUpdateTime*1000).Format("yyyy-MM-dd HH:mm:ss");
+    }
+	FUserGroup.prototype.ActionFormatter = function (value, row, index) {
+		var id = value;
+		var result = [];
+		
+		result.push('<a href="{{.URL_ColumnPower}}' + row.ID + '"><i class="fa fa-sliders" title="'+ row.Name +'-权限管理"></i></a>');
+		result.push("&nbsp;");
+		
+		result.push('<a href="{{.URL_Update}}' + row.ID + '"><i class="fa fa-pencil text-navy" title="修改"></i></a>');
+		result.push("&nbsp;");
+		
+		result.push('<a href="{{.URL_Del}}' + row.ID + '"><i class="fa fa-close text-danger" title="删除"></i></a>');
+		result.push("&nbsp;");
+		
+		return result.join("");
+	}
+// 批量删除被点击事件
+FUserGroup.prototype.OnClick_Add = function () {
+	window.location.href="{{str2html .URL_Add}}";
+}
+
+// 批量删除被点击事件
+FUserGroup.prototype.OnClick_BatchDelete = function () {
+	var obj = UserGroup;
+	var checkList = obj.Table.bootstrapTable('getSelections');
+	if (checkList.length == 0) {
+		swal({
+			title: "错误提示",
+			text: "请选择一条记录。",
+			type:"error"
+		});
+		return;
+	}
+	var idArray = []
+	for (var i = 0; i < checkList.length; i++) {
+		idArray.push(checkList[i].ID)
+	}
+	
+	var Confirmation_ok = function () {
+		swal.close();
+		var loading = layer.load(0, {
+			shade: [0.1,'#000']
+		});
+		$.ajax({
+			url: '{{.URL_BatchDelete}}',
+			data: { ids: idArray.join(',') },
+			type: 'post',
+			cache: false,
+			dataType: 'json',
+			success: function (data) {
+				if(data.code!=0){
+					layer.close(loading);
+					swal("错误提示",data.msg, "error");
+				}else{
+					window.location.href = window.location.href;
+				}
+			},
+			error: function () { console.log('异常请求') }
+		});
+	};
+	swal("您确定要删除这些信息吗?","删除后将无法恢复，请谨慎操作！", "warning", {
+		buttons: {
+			cancel: "取消",
+			defeat: "确定",
+		},
+		}).then((value) => {
+		switch (value) {
+			case "defeat":
+				Confirmation_ok();
+				break;
+			default:
+				swal.close();
+		}
+	});
+}
+	FUserGroup.prototype.InitEvent = function () {
+		//批量删除
+		$('#batchDelete').click(function () {
+			var checkList = UserGroup.Table.bootstrapTable('getSelections');
+
+			if (checkList.length == 0) {
+				swal({
+					title: "错误提示",
+					text: "请选择一条记录。"
+				});
+				return;
+			}
+
+
+			var idArray = []
+			for (var i = 0; i < checkList.length; i++) {
+				idArray.push(checkList[i].ID)
+			}
+
+			var Confirmation_ok = function () {
+				$.ajax({
+					url: '{{.BatchDelUrl}}',
+					data: { ids: idArray.join(',') },
+					type: 'post',
+					cache: false,
+					dataType: 'json',
+					success: function (data) {
+						if(data.code!=0){
+							swal("错误提示",data.msg);
+						}else{
+							// console.log(data.code)
+							window.location.href = window.location.href;
+						}
+					},
+					error: function () { console.log('异常请求') }
+				});
+			};
+			swal({
+				title: "您确定要删除这条信息吗",
+				text: "删除后将无法恢复，请谨慎操作！",
+				type: "warning",
+				showCancelButton: true,
+				confirmButtonColor: "#DD6B55",
+				confirmButtonText: "删除",
+				closeOnConfirm: false,
+				showLoaderOnConfirm: true, 
+			}, Confirmation_ok);
+		});
+	}
+
+
+// 对Date的扩展，将 Date 转化为指定格式的String
+// 月(M)、日(d)、小时(h)、分(m)、秒(s)、季度(q) 可以用 1-2 个占位符， 
+// 年(y)可以用 1-4 个占位符，毫秒(S)只能用 1 个占位符(是 1-3 位的数字) 
+Date.prototype.Format = function (fmt) { //author: meizz 
+    var o = {
+        "M+": this.getMonth() + 1, //月份 
+        "d+": this.getDate(), //日 
+        "H+": this.getHours(), //小时 
+        "m+": this.getMinutes(), //分 
+        "s+": this.getSeconds(), //秒 
+        "q+": Math.floor((this.getMonth() + 3) / 3), //季度 
+        "S": this.getMilliseconds() //毫秒 
+    };
+    if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+    for (var k in o)
+    if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+    return fmt;
+}
+
+	/**
+	 * 页面初始化
+	*/
+	$(document).ready(function () {
+		if (typeof window.UserGroup == 'undefined') {
+			window.UserGroup = new FUserGroup('#table')
+			UserGroup.Init();
+		}
+	});
+
+
+
+</script>

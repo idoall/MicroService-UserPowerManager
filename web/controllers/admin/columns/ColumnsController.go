@@ -18,6 +18,7 @@ type ColumnsController struct {
 	admin.AdminBaseController
 }
 
+// ColumnRow 解析栏目的struct
 type ColumnRow struct {
 	ID             int64  `json:"ID"`
 	Name           string `json:"Name"`
