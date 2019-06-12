@@ -21,6 +21,7 @@ import (
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin"
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin/columns"
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin/users"
+	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin/usersgroup"
 
 	"github.com/astaxie/beego/context"
 
@@ -33,6 +34,8 @@ func init() {
 	routerUserModel := &users.UsersController{}
 	// 注册栏目模块
 	routerColumnsModel := &columns.ColumnsController{}
+	// 注册用户组模块
+	routerUsersGroupModel := &usersgroup.UsersGroupController{}
 	// 注册登录、退出模块
 	routerSiteAuthModel := &siteauth.SiteAuthController{}
 
@@ -93,6 +96,25 @@ func init() {
 				beego.NSRouter("/updatesave", routerColumnsModel, "*:UpdateSave"),
 				// 批量删除
 				beego.NSRouter("/batchdelete", routerColumnsModel, "*:BatchDelete"),
+			),
+			// 用户组管理
+			beego.NSNamespace(fmt.Sprintf("/%s", usersgroup.TemplageBaseURL),
+				// 首页，默认调用 Get 方法
+				beego.NSRouter("/", routerUsersGroupModel),
+				// 获取JSON列表
+				beego.NSRouter("/GetListJSON", routerUsersGroupModel, "*:GetListJSON"),
+				// 添加
+				beego.NSRouter("/add", routerUsersGroupModel, "*:Add"),
+				// 添加 - 保存
+				beego.NSRouter("/addsave", routerUsersGroupModel, "*:AddSave"),
+				// 修改
+				beego.NSRouter("/update", routerUsersGroupModel, "*:Update"),
+				// 修改 - 保存
+				beego.NSRouter("/updatesave", routerUsersGroupModel, "*:UpdateSave"),
+				// 删除用户
+				beego.NSRouter("/delete", routerUsersGroupModel, "*:Delete"),
+				// 批量删除
+				beego.NSRouter("/batchdelete", routerUsersGroupModel, "*:BatchDelete"),
 			),
 		),
 

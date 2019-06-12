@@ -238,7 +238,7 @@ func (e *ApiColumns) Get(ctx context.Context, req *api.Request, rsp *api.Respons
 	// 获取请求参数 - 结束
 
 	// 调用服务端方法
-	srvrResponse, err := e.Client.Get(ctx, &srvProto.GetRequest{
+	srvResponse, err := e.Client.Get(ctx, &srvProto.GetRequest{
 		ID: ID,
 	})
 	if err != nil {
@@ -247,15 +247,15 @@ func (e *ApiColumns) Get(ctx context.Context, req *api.Request, rsp *api.Respons
 
 	// 对 json 序列化并输出
 	b, _ := json.Marshal(&responseJSONRow{
-		ID:             srvrResponse.Model.ID,
-		Name:           srvrResponse.Model.Name,
-		URL:            srvrResponse.Model.URL,
-		ParentID:       srvrResponse.Model.ParentID,
-		Sorts:          srvrResponse.Model.Sorts,
-		IsShowNav:      srvrResponse.Model.IsShowNav,
-		CssIcon:        srvrResponse.Model.CssIcon,
-		CreateTime:     srvrResponse.Model.CreateTime,
-		LastUpdateTime: srvrResponse.Model.LastUpdateTime,
+		ID:             srvResponse.Model.ID,
+		Name:           srvResponse.Model.Name,
+		URL:            srvResponse.Model.URL,
+		ParentID:       srvResponse.Model.ParentID,
+		Sorts:          srvResponse.Model.Sorts,
+		IsShowNav:      srvResponse.Model.IsShowNav,
+		CssIcon:        srvResponse.Model.CssIcon,
+		CreateTime:     srvResponse.Model.CreateTime,
+		LastUpdateTime: srvResponse.Model.LastUpdateTime,
 	})
 	rsp.StatusCode = 200
 	rsp.Body = string(b)

@@ -12,7 +12,7 @@ import (
 	"github.com/idoall/MicroService-UserPowerManager/utils/inner"
 	"github.com/idoall/MicroService-UserPowerManager/utils/jaeger"
 
-	srvproto "github.com/idoall/MicroService-UserPowerManager/srv/srvusersgroup/proto"
+	srvProto "github.com/idoall/MicroService-UserPowerManager/srv/srvusersgroup/v1/proto"
 
 	api "github.com/micro/go-api/proto"
 	"github.com/micro/go-micro/errors"
@@ -20,11 +20,11 @@ import (
 
 // ApiUsersGroup struct
 type ApiUsersGroup struct {
-	Client srvproto.SrvUsersGroupService
+	Client srvProto.SrvUsersGroupService
 }
 
 // swagger:route POST /mshk/api/v1/ApiUsersGroup/add users addPet
-// 添加一个用户组
+// Add 添加一个用户组
 func (e *ApiUsersGroup) Add(ctx context.Context, req *api.Request, rsp *api.Response) error {
 
 	var err error
@@ -35,27 +35,27 @@ func (e *ApiUsersGroup) Add(ctx context.Context, req *api.Request, rsp *api.Resp
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_API
+	namespace_ID := inner.NAMESPACE_MICROSERVICE_API
 
 	// debug
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [ApiUsersGroup][Add] request", namespace_id)
+		inner.Mlogger.Infof("Received %s API [ApiUsersGroup][Add] request", namespace_ID)
 	}
 
 	// 获取请求参数 - 开始
 	var name, note string
 	var sorts int64
 	if req.Post["Name"] == nil || req.Post["Name"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "Name 不能为空")
+		return errors.InternalServerError(namespace_ID, "Name 不能为空")
 	} else {
 		name = req.Post["Name"].Values[0]
 	}
 
 	if req.Post["Sorts"] == nil || req.Post["Sorts"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "Sorts 不能为空")
+		return errors.InternalServerError(namespace_ID, "Sorts 不能为空")
 	} else {
-		if sorts, err = commonutils.Int64FromString(req.Post["Sorts"]); err != nil {
-			return errors.InternalServerError(namespace_id, "Sorts Int64FromString Error:"+err.Error())
+		if sorts, err = commonutils.Int64FromString(req.Post["Sorts"].Values[0]); err != nil {
+			return errors.InternalServerError(namespace_ID, "Sorts Int64FromString Error:"+err.Error())
 		}
 	}
 	if req.Post["Note"] != nil {
@@ -64,7 +64,7 @@ func (e *ApiUsersGroup) Add(ctx context.Context, req *api.Request, rsp *api.Resp
 	// 获取请求参数 - 结束
 
 	// make request
-	requestModel := &srvproto.UsersGroup{
+	requestModel := &srvProto.UsersGroup{
 		Name:     name,
 		ParentID: 0,
 		Sorts:    sorts,
@@ -72,23 +72,23 @@ func (e *ApiUsersGroup) Add(ctx context.Context, req *api.Request, rsp *api.Resp
 	}
 
 	// 调用服务端方法
-	response, err := e.Client.Add(ctx, &srvproto.AddRequest{Model: requestModel})
+	srvResponse, err := e.Client.Add(ctx, &srvProto.AddRequest{Model: requestModel})
 	if err != nil {
-		return errors.InternalServerError(namespace_id, err.Error())
+		return errors.InternalServerError(namespace_ID, err.Error())
 	}
 
 	// 输出的 json
-	responseJSON := struct {
+	srvResponseJSON := struct {
 		NewID int64 `json:"newid"`
 	}{}
-	responseJSON.NewID = response.NewID
-	b, _ := commonutils.JSONEncode(responseJSON)
+	srvResponseJSON.NewID = srvResponse.NewID
+	b, _ := commonutils.JSONEncode(srvResponseJSON)
 	rsp.StatusCode = 200
 	rsp.Body = string(b)
 
 	// debug
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Info(response)
+		inner.Mlogger.Info(srvResponse)
 		inner.Mlogger.Info("rsp.Body", rsp.Body)
 	}
 
@@ -96,13 +96,13 @@ func (e *ApiUsersGroup) Add(ctx context.Context, req *api.Request, rsp *api.Resp
 	ctx, span = jaeger.StartSpan(ctx, "Api_UserGroup_Add_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("NewID", response.NewID)
+		span.SetTag("NewID", srvResponse.NewID)
 	}
 
 	return nil
 }
 
-// 获取用户列表,默认 id 倒排序
+// GetList 获取用户列表,默认 id 倒排序
 func (e *ApiUsersGroup) GetList(ctx context.Context, req *api.Request, rsp *api.Response) error {
 
 	var err error
@@ -113,25 +113,25 @@ func (e *ApiUsersGroup) GetList(ctx context.Context, req *api.Request, rsp *api.
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_API
+	namespace_ID := inner.NAMESPACE_MICROSERVICE_API
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [ApiUsersGroup][GetList] request", namespace_id)
+		inner.Mlogger.Infof("Received %s API [ApiUsersGroup][GetList] request", namespace_ID)
 	}
 
 	// 获取请求参数 - 开始
 	var pageSize, currentPageIndex int64
 	var orderBy string
 	if req.Get["PageSize"] == nil || req.Get["PageSize"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "PageSize 不能为空")
+		return errors.InternalServerError(namespace_ID, "PageSize 不能为空")
 	} else if pageSize, err = commonutils.Int64FromString(req.Get["PageSize"].Values[0]); err != nil {
-		return errors.InternalServerError(namespace_id, "PageSize Format Error:%s", err.Error())
+		return errors.InternalServerError(namespace_ID, "PageSize Format Error:%s", err.Error())
 	}
 
 	if req.Get["CurrentPageIndex"] == nil || req.Get["CurrentPageIndex"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "CurrentPageIndex 不能为空")
+		return errors.InternalServerError(namespace_ID, "CurrentPageIndex 不能为空")
 	} else if currentPageIndex, err = commonutils.Int64FromString(req.Get["CurrentPageIndex"].Values[0]); err != nil {
-		return errors.InternalServerError(namespace_id, "CurrentPageIndex Format Error:%s", err.Error())
+		return errors.InternalServerError(namespace_ID, "CurrentPageIndex Format Error:%s", err.Error())
 
 	}
 
@@ -140,23 +140,26 @@ func (e *ApiUsersGroup) GetList(ctx context.Context, req *api.Request, rsp *api.
 	}
 	// 获取请求参数 - 结束
 
+	// return json
+	jsonList := struct {
+		Rows  []*srvProto.UsersGroup `json:"rows"`
+		Total int64                  `json:"total"`
+	}{}
+
 	// 调用服务端方法
-	response, err := e.Client.GetList(ctx, &srvproto.GetListRequest{
+	srvResponse, err := e.Client.GetList(ctx, &srvProto.GetListRequest{
 		CurrentPageIndex: currentPageIndex,
 		PageSize:         pageSize,
 		OrderBy:          orderBy,
 	})
 	if err != nil {
-		return errors.InternalServerError(namespace_id, err.Error())
+		if !commonutils.StringContains(err.Error(), "no row found") {
+			return errors.InternalServerError(namespace_ID, err.Error())
+		}
+	} else {
+		jsonList.Rows = srvResponse.List
+		jsonList.Total = srvResponse.TotalCount
 	}
-
-	// return json
-	jsonList := struct {
-		Rows  []*srvproto.UsersGroup `json:"rows"`
-		Total int64                  `json:"total"`
-	}{}
-	jsonList.Rows = response.List
-	jsonList.Total = response.TotalCount
 
 	// 对 json 序列化并输出
 	b, _ := json.Marshal(jsonList)
@@ -175,13 +178,13 @@ func (e *ApiUsersGroup) GetList(ctx context.Context, req *api.Request, rsp *api.
 		span.SetTag("PageSize", pageSize)
 		span.SetTag("CurrentPageIndex", currentPageIndex)
 		span.SetTag("orderBy", orderBy)
-		span.SetTag("TotalCount", response.TotalCount)
+		// span.SetTag("TotalCount", srvResponse.TotalCount)
 	}
 
 	return nil
 }
 
-// 获取单个用户组，根据Id
+// Get 获取单个用户组，根据Id
 func (e *ApiUsersGroup) Get(ctx context.Context, req *api.Request, rsp *api.Response) error {
 
 	var err error
@@ -192,32 +195,40 @@ func (e *ApiUsersGroup) Get(ctx context.Context, req *api.Request, rsp *api.Resp
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_API
+	namespace_ID := inner.NAMESPACE_MICROSERVICE_API
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [Get] request", namespace_id)
+		inner.Mlogger.Infof("Received %s API [Get] request", namespace_ID)
 	}
 
 	// 获取请求参数 - 开始
 	var ID int64
-	if req.Get["Id"] != nil && req.Get["Id"].Values[0] != "0" {
-		if ID, err = commonutils.Int64FromString(req.Get["Id"].Values[0]); err != nil {
-			return errors.InternalServerError(namespace_id, "Id Format Error:%s", err.Error())
+	if req.Get["ID"] != nil && req.Get["ID"].Values[0] != "0" {
+		if ID, err = commonutils.Int64FromString(req.Get["ID"].Values[0]); err != nil {
+			return errors.InternalServerError(namespace_ID, "ID Format Error:%s", err.Error())
 		}
 	}
 
 	// 获取请求参数 - 结束
 
 	// 调用服务端方法
-	response, err := e.Client.Get(ctx, &srvproto.GetRequest{
+	srvResponse, err := e.Client.Get(ctx, &srvProto.GetRequest{
 		ID: ID,
 	})
 	if err != nil {
-		return errors.InternalServerError(namespace_id, err.Error())
+		return errors.InternalServerError(namespace_ID, err.Error())
 	}
 
 	// 对 json 序列化并输出
-	b, _ := json.Marshal(response)
+	b, _ := json.Marshal(&responseJSONRow{
+		ID:             srvResponse.Model.ID,
+		Name:           srvResponse.Model.Name,
+		ParentID:       srvResponse.Model.ParentID,
+		Sorts:          srvResponse.Model.Sorts,
+		Note:           srvResponse.Model.Note,
+		CreateTime:     srvResponse.Model.CreateTime,
+		LastUpdateTime: srvResponse.Model.LastUpdateTime,
+	})
 	rsp.StatusCode = 200
 	rsp.Body = string(b)
 
@@ -236,7 +247,7 @@ func (e *ApiUsersGroup) Get(ctx context.Context, req *api.Request, rsp *api.Resp
 	return nil
 }
 
-// 修改用户信息
+// Update 修改用户信息
 func (e *ApiUsersGroup) Update(ctx context.Context, req *api.Request, rsp *api.Response) error {
 
 	var err error
@@ -247,31 +258,31 @@ func (e *ApiUsersGroup) Update(ctx context.Context, req *api.Request, rsp *api.R
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_API
+	namespace_ID := inner.NAMESPACE_MICROSERVICE_API
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [ApiUsersGroup][Update] request", namespace_id)
+		inner.Mlogger.Infof("Received %s API [ApiUsersGroup][Update] request", namespace_ID)
 	}
 
 	// 获取请求参数 - 开始
-	var Id, sorts int64
+	var ID, sorts int64
 	var name, note string
-	if req.Post["Id"] == nil || req.Post["Id"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "Id 不能为空")
-	} else if Id, err = commonutils.Int64FromString(req.Post["Id"].Values[0]); err != nil {
-		return errors.InternalServerError(namespace_id, "Id Format Error:%s", err.Error())
+	if req.Post["ID"] == nil || req.Post["ID"].Values[0] == "" {
+		return errors.InternalServerError(namespace_ID, "ID 不能为空")
+	} else if ID, err = commonutils.Int64FromString(req.Post["ID"].Values[0]); err != nil {
+		return errors.InternalServerError(namespace_ID, "ID Format Error:%s", err.Error())
 	}
 	if req.Post["Name"] == nil || req.Post["Name"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "Name 不能为空")
+		return errors.InternalServerError(namespace_ID, "Name 不能为空")
 	} else {
 		name = req.Post["Name"].Values[0]
 	}
 
 	if req.Post["Sorts"] == nil || req.Post["Sorts"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "Sorts 不能为空")
+		return errors.InternalServerError(namespace_ID, "Sorts 不能为空")
 	} else {
-		if sorts, err = commonutils.Int64FromString(req.Post["Sorts"]); err != nil {
-			return errors.InternalServerError(namespace_id, "Sorts Int64FromString Error:"+err.Error())
+		if sorts, err = commonutils.Int64FromString(req.Post["Sorts"].Values[0]); err != nil {
+			return errors.InternalServerError(namespace_ID, "Sorts Int64FromString Error:"+err.Error())
 		}
 	}
 	if req.Post["Note"] != nil {
@@ -280,24 +291,24 @@ func (e *ApiUsersGroup) Update(ctx context.Context, req *api.Request, rsp *api.R
 	// 获取请求参数 - 结束
 
 	// 调用服务端方法 - 修改用户组
-	responseUpdateUser := &srvproto.UsersGroup{
-		ID:       Id,
+	srvResponseUpdateUser := &srvProto.UsersGroup{
+		ID:       ID,
 		Name:     name,
 		ParentID: 0,
 		Sorts:    sorts,
 		Note:     note,
 	}
-	srvResponse, err := e.Client.Update(ctx, &srvproto.UpdateRequest{Model: responseUpdateUser})
+	srvsrvResponse, err := e.Client.Update(ctx, &srvProto.UpdateRequest{Model: srvResponseUpdateUser})
 	if err != nil {
-		return errors.InternalServerError(namespace_id, err.Error())
+		return errors.InternalServerError(namespace_ID, err.Error())
 	}
 
 	// 输出的 json
-	responseJson := struct {
+	srvResponseJSON := struct {
 		Updated int64
 	}{}
-	responseJson.Updated = srvResponse.Updated
-	b, _ := commonutils.JSONEncode(responseJson)
+	srvResponseJSON.Updated = srvsrvResponse.Updated
+	b, _ := commonutils.JSONEncode(srvResponseJSON)
 	rsp.StatusCode = 200
 	rsp.Body = string(b)
 
@@ -310,14 +321,14 @@ func (e *ApiUsersGroup) Update(ctx context.Context, req *api.Request, rsp *api.R
 	ctx, span = jaeger.StartSpan(ctx, "Api_UserGroup_Update_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("Id", Id)
-		span.SetTag("Updated", srvResponse.Updated)
+		span.SetTag("ID", ID)
+		span.SetTag("Updated", srvsrvResponse.Updated)
 	}
 
 	return nil
 }
 
-// 批量删除用户组信息
+// BatchDelete 批量删除用户组信息
 func (e *ApiUsersGroup) BatchDelete(ctx context.Context, req *api.Request, rsp *api.Response) error {
 
 	var err error
@@ -328,36 +339,36 @@ func (e *ApiUsersGroup) BatchDelete(ctx context.Context, req *api.Request, rsp *
 		defer span.Finish()
 	}
 
-	namespace_id := inner.NAMESPACE_MICROSERVICE_API
+	namespace_ID := inner.NAMESPACE_MICROSERVICE_API
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [ApiUsersGroup][BatchDelete] request", namespace_id)
+		inner.Mlogger.Infof("Received %s API [ApiUsersGroup][BatchDelete] request", namespace_ID)
 	}
 
 	// 获取请求参数 - 开始
 	var IdArray []string
-	if req.Post["Ids"] == nil || req.Post["Ids"].Values[0] == "" {
-		return errors.InternalServerError(namespace_id, "Ids 不能为空")
+	if req.Post["IDArray"] == nil || req.Post["IDArray"].Values[0] == "" {
+		return errors.InternalServerError(namespace_ID, "IDArray 不能为空")
 	} else {
-		IdArray = strings.Split(req.Post["Ids"].Values[0], ",")
+		IdArray = strings.Split(req.Post["IDArray"].Values[0], ",")
 	}
 
 	// 获取请求参数 - 结束
 
 	// 调用服务端方法获取用户
-	response, err := e.Client.BatchDelete(ctx, &srvproto.DeleteRequest{
+	srvResponse, err := e.Client.BatchDelete(ctx, &srvProto.DeleteRequest{
 		IdArray: IdArray,
 	})
 	if err != nil {
-		return errors.InternalServerError(namespace_id, err.Error())
+		return errors.InternalServerError(namespace_ID, err.Error())
 	}
 
 	// 输出的 json
-	respJson := struct {
+	respJSON := struct {
 		Deleted int64
 	}{}
-	respJson.Deleted = response.Deleted
-	b, _ := commonutils.JSONEncode(respJson)
+	respJSON.Deleted = srvResponse.Deleted
+	b, _ := commonutils.JSONEncode(respJSON)
 	rsp.StatusCode = 200
 	rsp.Body = string(b)
 
@@ -374,4 +385,15 @@ func (e *ApiUsersGroup) BatchDelete(ctx context.Context, req *api.Request, rsp *
 	}
 
 	return nil
+}
+
+// responseJSONRow 这里重点讲一下，proto自动生成的每一个字段都会加上omitempty，当ParentID和Sorts为0时，会不显示该字段。所以重新转义
+type responseJSONRow struct {
+	ID             int64  `json:"ID"`
+	Name           string `json:"Name"`
+	ParentID       int64  `json:"ParentID"`
+	Sorts          int64  `json:"Sorts"`
+	Note           string `json:"Note"`
+	CreateTime     int64  `json:"CreateTime"`
+	LastUpdateTime int64  `json:"LastUpdateTime"`
 }

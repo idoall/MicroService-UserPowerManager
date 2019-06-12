@@ -8,9 +8,8 @@ import (
 
 	"github.com/micro/go-micro"
 
-	"github.com/idoall/MicroService-UserPowerManager/api/apiusers/handler"
-	srvhistoryuserlogin "github.com/idoall/MicroService-UserPowerManager/srv/srvhistoryuserlogin/proto"
-	srvusers "github.com/idoall/MicroService-UserPowerManager/srv/srvusers/proto"
+	"github.com/idoall/MicroService-UserPowerManager/api/apiusersgroup/v1/handler"
+	srvProto "github.com/idoall/MicroService-UserPowerManager/srv/srvusersgroup/v1/proto"
 )
 
 func main() {
@@ -34,9 +33,8 @@ func main() {
 
 	service.Server().Handle(
 		service.Server().NewHandler(
-			&handler.ApiUsers{
-				ClientUser:    srvusers.NewSrvUsersService(inner.NAMESPACE_MICROSERVICE_SRVUSERS, service.Client()),
-				ClientHistory: srvhistoryuserlogin.NewSrvHistoryUserLoginService(inner.NAMESPACE_MICROSERVICE_SRVHISTORYUSERLOGIN, service.Client()),
+			&handler.ApiUsersGroup{
+				Client: srvProto.NewSrvUsersGroupService(inner.NAMESPACE_MICROSERVICE_SRVUSERSGROUP, service.Client()),
 			},
 		),
 	)

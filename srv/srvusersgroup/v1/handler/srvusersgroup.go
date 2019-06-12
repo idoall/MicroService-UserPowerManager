@@ -6,7 +6,7 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/idoall/MicroService-UserPowerManager/models"
-	proto "github.com/idoall/MicroService-UserPowerManager/srv/srvusersgroup/proto"
+	proto "github.com/idoall/MicroService-UserPowerManager/srv/srvusersgroup/v1/proto"
 	"github.com/idoall/MicroService-UserPowerManager/utils"
 	"github.com/idoall/MicroService-UserPowerManager/utils/inner"
 	"github.com/idoall/MicroService-UserPowerManager/utils/jaeger"
@@ -162,7 +162,7 @@ func (e *SrvUsersGroup) Get(ctx context.Context, req *proto.GetRequest, rep *pro
 	ctx, span = jaeger.StartSpan(ctx, "Srv_UserGroup_GetUser_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("Id", req.Id)
+		span.SetTag("ID", req.ID)
 	}
 
 	return nil
