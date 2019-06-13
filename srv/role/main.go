@@ -4,8 +4,8 @@ import (
 	"github.com/micro/go-log"
 	"github.com/micro/go-micro"
 
-	"github.com/idoall/MicroService-UserPowerManager/srv/srvcolumns/v1/handler"
-	proto "github.com/idoall/MicroService-UserPowerManager/srv/srvcolumns/v1/proto"
+	"github.com/idoall/MicroService-UserPowerManager/srv/role/v1/handler"
+	proto "github.com/idoall/MicroService-UserPowerManager/srv/role/v1/proto"
 	"github.com/idoall/MicroService-UserPowerManager/utils"
 	"github.com/idoall/MicroService-UserPowerManager/utils/inner"
 	"github.com/idoall/MicroService-UserPowerManager/utils/jaeger"
@@ -24,7 +24,7 @@ func main() {
 
 	// New Service
 	service := micro.NewService(
-		micro.Name(inner.NAMESPACE_MICROSERVICE_SRVCOLUMNS),
+		micro.Name(inner.NAMESPACE_MICROSERVICE_SRVROLE),
 		micro.Version("latest"),
 	)
 
@@ -32,7 +32,7 @@ func main() {
 	service.Init()
 
 	// Register Handler
-	proto.RegisterSrvColumnsHandler(service.Server(), new(handler.SrvColumns))
+	proto.RegisterSrvRoleHandler(service.Server(), new(handler.SrvRole))
 
 	// Register Struct as Subscriber
 	// micro.RegisterSubscriber("go.micro.srv.template", service.Server(), new(subscriber.Example))

@@ -4,8 +4,8 @@ import (
 	"github.com/micro/go-log"
 	"github.com/micro/go-micro"
 
-	"github.com/idoall/MicroService-UserPowerManager/srv/srvusers/handler"
-	proto "github.com/idoall/MicroService-UserPowerManager/srv/srvusers/proto"
+	"github.com/idoall/MicroService-UserPowerManager/srv/srvusers/v1/handler"
+	proto "github.com/idoall/MicroService-UserPowerManager/srv/srvusers/v1/proto"
 	"github.com/idoall/MicroService-UserPowerManager/utils"
 	"github.com/idoall/MicroService-UserPowerManager/utils/inner"
 	"github.com/idoall/MicroService-UserPowerManager/utils/jaeger"

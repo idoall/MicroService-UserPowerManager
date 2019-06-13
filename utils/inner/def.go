@@ -21,4 +21,6 @@ const (
 	NAMESPACE_MICROSERVICE_SRVCOLUMNS = "go.micro.srv.mshk.v1.srvcolumns"
 	// 注册的命名空间 ID - go micro server - HistoryUserLogin
 	NAMESPACE_MICROSERVICE_SRVHISTORYUSERLOGIN = "go.micro.srv.mshk.v1.srvhistoryuserlogin"
+	// 注册的命名空间 ID - go micro server - Role
+	NAMESPACE_MICROSERVICE_SRVROLE = "go.micro.srv.mshk.v1.srvrole"
 )

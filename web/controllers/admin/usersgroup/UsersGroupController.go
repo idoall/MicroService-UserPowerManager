@@ -203,7 +203,7 @@ func (e *UsersGroupController) Update() {
 	} else {
 		e.Data["Model"] = responseJSON
 	}
-	fmt.Println(responseJSON)
+
 	//set Data
 	versionAdminURL := e.GetVersionAdminBaseURL()
 	e.Data["title"] = fmt.Sprintf("修改%s", baseTitle)
@@ -350,83 +350,111 @@ func (e *UsersGroupController) BatchDelete() {
 
 // ColumnPower 展示用户组-权限页面
 func (e *UsersGroupController) ColumnPower() {
-	// var result models.Result
-	// id, _ := e.GetInt64("id", 0)
+	var err error
+	var ID int64
+	// 用于 json 返回的数据
+	var result models.Result
 
-	// model, err := new(models.UserGroup).GetOne(id)
-	// if err != nil {
-	// 	result.Code = -1
-	// 	result.Msg = err.Error()
-	// 	e.Data["json"] = result
-	// 	e.ServeJSON()
-	// 	return
-	// }
+	if ID, err = e.GetInt64("id", 0); err != nil {
+		result.Code = -1
+		result.Msg = err.Error()
+		e.Data["json"] = result
+		e.ServeJSON()
+		return
+	}
 
-	// e.Data["Model"] = model
-	// e.Data["title"] = fmt.Sprintf("%s『%s』 权限配置", baseTitle, model.Name)
-	// e.Data["ColumnPowerSaveURL"] = fmt.Sprintf("/%s/ColumnPowerSave", BaseURL)
-	// e.Data["URL_GetColumnPowerTreeViewJSON"] = fmt.Sprintf("/%s/GetColumnPowerTreeViewJSON", BaseURL)
-	// e.Data["JSONTreeViewListSelectedDataUrl"] = fmt.Sprintf("/%s/GetTreeViewJSONSelectedData", BaseURL)
+	// 拼接要发送的url参数
+	params := url.Values{}
+	params.Set("ID", strconv.FormatInt(ID, 10))
 
-	// e.SetMortStype()
-	// e.SetMortScript()
-	// e.AppendCustomScripts([]string{
-	// 	//Bootstrap table
-	// 	"/static/js/hplus/plugins/bootstrap-table/bootstrap-table.min.js",
-	// 	"/static/js/hplus/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js",
-	// 	// TreeView
-	// 	"/static/js/hplus/plugins/treeview/bootstrap-treeview.min.js",
-	// 	//layer
-	// 	"/static/js/hplus/plugins/layer/layer.min.js",
-	// })
-	// e.AppendCustomStyles([]string{
-	// 	//Bootstrap table
-	// 	"/static/css/hplus/bootstrap-table/bootstrap-table.min.css",
-	// 	// TreeView
-	// 	"/static/css/hplus/treeview/bootstrap-treeview.min.css",
-	// })
+	// 发送请求的路径
+	path := fmt.Sprintf("%s%s?%s",
+		inner.MicroServiceHostProt,
+		utils.TConfig.String("MicroServices::ServiceURL_UsersGroup_Get"),
+		params.Encode(),
+	)
 
-	// e.Layout = "admin/layout/layout.html"
-	// e.LayoutSections = make(map[string]string)
-	// e.LayoutSections["CustomHeader"] = "admin/layout/layout-customsheader.html"
-	// e.TplName = BaseURL + "/columnpower.html"
+	// 临时 Json解析类
+	var responseJSON map[string]interface{}
+	// 发送 http 请求
+	if err = request.Request.SendPayload("GET", path, nil, nil, &responseJSON, false, true, false); err != nil {
+		result.Code = -1
+		result.Msg = err.Error()
+		e.Data["json"] = result
+		e.ServeJSON()
+		return
+	} else {
+		e.Data["Model"] = responseJSON
+	}
+
+	//set Data
+	versionAdminURL := e.GetVersionAdminBaseURL()
+	e.Data["Model"] = responseJSON
+	e.Data["title"] = fmt.Sprintf("%s『%s』 权限配置", baseTitle, responseJSON["Name"].(string))
+	e.Data["ColumnPowerSaveURL"] = fmt.Sprintf("%s/%s/ColumnPowerSave", versionAdminURL, TemplageBaseURL)
+	e.Data["URL_GetColumnPowerTreeViewJSON"] = fmt.Sprintf("%s/%s/GetColumnPowerTreeViewJSON", versionAdminURL, TemplageBaseURL)
+	e.Data["JSONTreeViewListSelectedDataUrl"] = fmt.Sprintf("%s/%s/GetTreeViewJSONSelectedData", versionAdminURL, TemplageBaseURL)
+
+	//公用设置，样式、脚本、layout
+	e.SetMortStype()
+	e.SetMortScript()
+	e.AppendCustomScripts([]string{
+		//Bootstrap table
+		"/static/js/hplus/plugins/bootstrap-table/bootstrap-table.min.js",
+		"/static/js/hplus/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js",
+		// TreeView
+		"/static/js/hplus/plugins/treeview/bootstrap-treeview.min.js",
+		//layer
+		"/static/js/hplus/plugins/layer/layer.min.js",
+	})
+	e.AppendCustomStyles([]string{
+		//Bootstrap table
+		"/static/css/hplus/bootstrap-table/bootstrap-table.min.css",
+		// TreeView
+		"/static/css/hplus/treeview/bootstrap-treeview.min.css",
+	})
+	e.Layout = "admin/layout/layout.html"
+	e.LayoutSections = make(map[string]string)
+	e.LayoutSections["CustomHeader"] = "admin/layout/layout-customsheader.html"
+	e.TplName = fmt.Sprintf("%s/%s/columnpower.html", admin.TemplageAdminBaseURL, TemplageBaseURL)
+
 }
 
 // GetColumnPowerTreeViewJSON Default Json
 func (e *UsersGroupController) GetColumnPowerTreeViewJSON() {
-	// var list []*models.TreeView
-	// var result models.Result
+	var list []*models.TreeView
+	var result models.Result
 
-	// //取出用户组的所有权限
-	// columnPowerList := admin.RoleS.GetPermissionsForUser("usergroup_" + e.GetString("id"))
+	//取出用户组的所有权限
+	columnPowerList := admin.RoleS.GetPermissionsForUser("usergroup_" + e.GetString("id"))
 
-	// // fmt.Println(columnPowerList)
+	// fmt.Println(columnPowerList)
 
-	// list, err := new(models.ColumnPower).GetTreeViewBootstrap()
-	// if err != nil {
-	// 	result.Code = -1
-	// 	result.Msg = err.Error()
-	// 	e.Data["json"] = result
-	// 	e.ServeJSON()
-	// 	return
-	// }
+	list, err := new(models.ColumnPower).GetTreeViewBootstrap()
+	if err != nil {
+		result.Code = -1
+		result.Msg = err.Error()
+		e.Data["json"] = result
+		e.ServeJSON()
+		return
+	}
 
-	// for _, v := range list {
-	// 	for _, cv := range columnPowerList {
-	// 		cid, _ := strconv.ParseInt(cv[1], 10, 64)
-	// 		if v.ID == cid {
-	// 			v.State = &models.TreeViewState{Checked: true, Expanded: true}
-	// 		}
-	// 		if v.Nodes != nil {
-	// 			e.getRecursiveColumnPowerTreeView(columnPowerList, v.Nodes)
-	// 		}
-	// 	}
+	for _, v := range list {
+		for _, cv := range columnPowerList {
+			cid, _ := strconv.ParseInt(cv[1], 10, 64)
+			if v.ID == cid {
+				v.State = &models.TreeViewState{Checked: true, Expanded: true}
+			}
+			if v.Nodes != nil {
+				e.getRecursiveColumnPowerTreeView(columnPowerList, v.Nodes)
+			}
+		}
 
-	// }
-	// // list[0].State = &models.TreeViewState{Checked: true, Expanded: true}
+	}
+	// list[0].State = &models.TreeViewState{Checked: true, Expanded: true}
 
-	// e.Data["json"] = list
-	// e.ServeJSON()
+	e.Data["json"] = list
+	e.ServeJSON()
 }
 
 // getRecursive 递归获取下一级

@@ -8,9 +8,9 @@ import (
 
 	"github.com/micro/go-micro"
 
-	"github.com/idoall/MicroService-UserPowerManager/api/apiusers/handler"
-	srvhistoryuserlogin "github.com/idoall/MicroService-UserPowerManager/srv/srvhistoryuserlogin/proto"
-	srvusers "github.com/idoall/MicroService-UserPowerManager/srv/srvusers/proto"
+	"github.com/idoall/MicroService-UserPowerManager/api/apiusers/v1/handler"
+	srvhistoryuserlogin "github.com/idoall/MicroService-UserPowerManager/srv/srvhistoryuserlogin/v1/proto"
+	srvusers "github.com/idoall/MicroService-UserPowerManager/srv/srvusers/v1/proto"
 )
 
 func main() {

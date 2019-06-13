@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+// import public "google/protobuf/timestamp.proto"; 
+package SrvRole;
+
+service SrvRole {
+	// 根据用户组获取权限
+	rpc GetPermissionsForUser(ForUserRequest) returns (GetPermissionsForUserResponse) {}
+	// 获取用户组列表
+	rpc DeletePermissionsForUser(ForUserRequest) returns (DeletePermissionsForUserResponse) {}
+	// 获取单个用户组
+	rpc RemoveFilteredPolicy(RemoveFilteredPolicyRequest)returns (Empty) {}
+	// 修改用户组信息
+	rpc AddPolicy(AddPolicyRequest) returns (Empty) {}
+	// 批量删除用户组
+	rpc GetRolesForUser(GetRolesForUserRequest) returns (GetRolesForUserResponse) {}
+}
+
+message Empty {
+
+}
+
+message ForUserRequest{
+	string User =1;
+}
+
+message GetPermissionsForUserResponse{
+	repeated TwoString One =1;
+}
+
+message TwoString{
+	repeated string Two =1;
+}
+
+message DeletePermissionsForUserResponse{
+	bool IsDel =1;
+}
+
+message RemoveFilteredPolicyRequest{
+	string role = 1;
+}
+
+message AddPolicyRequest{
+	string s1 =1;
+	string s2 =2;
+	string s3=3;
+	string s4=4;
+	string s5 =5;
+}
+
+message GetRolesForUserRequest{
+	string Name =1;
+}
+
+message GetRolesForUserResponse{
+	repeated string Roles = 1;
+}

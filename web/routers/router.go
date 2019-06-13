@@ -115,6 +115,12 @@ func init() {
 				beego.NSRouter("/delete", routerUsersGroupModel, "*:Delete"),
 				// 批量删除
 				beego.NSRouter("/batchdelete", routerUsersGroupModel, "*:BatchDelete"),
+				// 获取栏目 JSON 列表
+				beego.NSRouter("/GetColumnPowerTreeViewJSON", routerUsersGroupModel, "*:GetColumnPowerTreeViewJSON"),
+				// 获取栏目权限
+				beego.NSRouter("/ColumnPower", routerUsersGroupModel, "*:ColumnPower"),
+				// 更改权限
+				beego.NSRouter("/ColumnPowerSave", routerUsersGroupModel, "*:ColumnPowerSave"),
 			),
 		),
 
