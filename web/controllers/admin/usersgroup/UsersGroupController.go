@@ -84,7 +84,7 @@ func (e *UsersGroupController) GetListJSON() {
 	}
 }
 
-// Get 首页
+// Get 首页 /v1/admin/usersgroup [get]
 func (e *UsersGroupController) Get() {
 
 	//set Data
@@ -114,9 +114,8 @@ func (e *UsersGroupController) Get() {
 	e.TplName = fmt.Sprintf("%s/%s/index.html", admin.TemplageAdminBaseURL, TemplageBaseURL)
 }
 
-// Add 添加
+// Add 添加 /v1/admin/usersgroup/add [get]
 func (e *UsersGroupController) Add() {
-
 	versionAdminURL := e.GetVersionAdminBaseURL()
 	e.Data["title"] = fmt.Sprintf("添加%s", baseTitle)
 	e.Data["DefaultUrl"] = fmt.Sprintf("%s/%s", versionAdminURL, TemplageBaseURL)
@@ -133,7 +132,7 @@ func (e *UsersGroupController) Add() {
 	e.TplName = fmt.Sprintf("%s/%s/add.html", admin.TemplageAdminBaseURL, TemplageBaseURL)
 }
 
-// AddSave 保存添加的交易配置
+// AddSave 添加 - 保存 /v1/admin/usersgroup/addsave [post]
 func (e *UsersGroupController) AddSave() {
 
 	// 用于 json 返回的数据
