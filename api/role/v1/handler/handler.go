@@ -2,9 +2,6 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"strings"
 
 	"github.com/idoall/TokenExchangeCommon/commonutils"
 
@@ -25,13 +22,13 @@ type Role struct {
 }
 
 // route POST /mshk/api/v1/Role/add
-// 添加一个栏目
-func (e *Role) Add(ctx context.Context, req *api.Request, rsp *api.Response) error {
+// 根据用户获取权限
+func (e *Role) GetPermissionsForUser(ctx context.Context, req *api.Request, rsp *api.Response) error {
 
 	var err error
 
 	// 写入一个 jaeger span
-	ctx, span := jaeger.StartSpan(ctx, "Api_Role_Add_Begin")
+	ctx, span := jaeger.StartSpan(ctx, "Api_Role_GetPermissionsForUser_Begin")
 	if span != nil {
 		defer span.Finish()
 	}
@@ -40,64 +37,25 @@ func (e *Role) Add(ctx context.Context, req *api.Request, rsp *api.Response) err
 
 	// debug
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [Role][Add] request", namespaceID)
+		inner.Mlogger.Infof("Received %s API [Role][GetPermissionsForUser] request", namespaceID)
 	}
 
 	// 获取请求参数 - 开始
-	var name, URL, cssIcon string
-	var ParentID, sorts int64
-	var isShowNav bool
-	if req.Post["Name"] == nil || req.Post["Name"].Values[0] == "" {
-		return errors.InternalServerError(namespaceID, "Name 不能为空")
+	var user string
+	if req.Post["User"] == nil || req.Post["User"].Values[0] == "" {
+		return errors.InternalServerError(namespaceID, "User 不能为空")
 	} else {
-		name = req.Post["Name"].Values[0]
-	}
-
-	if req.Post["URL"] != nil && req.Post["URL"].Values[0] != "" {
-		URL = req.Post["URL"].Values[0]
-	}
-	if req.Post["CssIcon"] != nil && req.Post["CssIcon"].Values[0] != "" {
-		cssIcon = req.Post["CssIcon"].Values[0]
-	}
-
-	if req.Post["ParentID"] != nil && req.Post["ParentID"].Values[0] != "" {
-		if ParentID, err = commonutils.Int64FromString(req.Post["ParentID"].Values[0]); err != nil {
-			return errors.InternalServerError(namespaceID, "ParentID 的格式不正确:%s", err.Error())
-		}
-	}
-
-	if req.Post["Sorts"] != nil && req.Post["Sorts"].Values[0] != "" {
-		if sorts, err = commonutils.Int64FromString(req.Post["Sorts"].Values[0]); err != nil {
-			return errors.InternalServerError(namespaceID, "Sorts 的格式不正确:%s", err.Error())
-		}
-	}
-	if req.Post["IsShowNav"] != nil && req.Post["IsShowNav"].Values[0] != "" && (req.Post["IsShowNav"].Values[0] == "1" || req.Post["IsShowNav"].Values[0] == "true") {
-		isShowNav = true
-	}
-	// 获取请求参数 - 结束
-
-	// make request
-	addModel := &srvProto.Columns{
-		Name:      name,
-		URL:       URL,
-		ParentID:  ParentID,
-		Sorts:     sorts,
-		IsShowNav: isShowNav,
-		CssIcon:   cssIcon,
+		user = req.Post["User"].Values[0]
 	}
 
 	// 调用服务端方法
-	srvResponse, err := e.Client.Add(ctx, &srvProto.AddRequest{Model: addModel})
+	srvResponse, err := e.Client.GetPermissionsForUser(ctx, &srvProto.ForUserRequest{User: user})
 	if err != nil {
 		return errors.InternalServerError(namespaceID, err.Error())
 	}
 
 	// 输出的 json
-	respnseJSON := struct {
-		NewID int64 `json:"newid"`
-	}{}
-	respnseJSON.NewID = srvResponse.NewID
-	b, _ := commonutils.JSONEncode(respnseJSON)
+	b, _ := commonutils.JSONEncode(srvResponse.One)
 	rsp.StatusCode = 200
 	rsp.Body = string(b)
 
@@ -108,22 +66,21 @@ func (e *Role) Add(ctx context.Context, req *api.Request, rsp *api.Response) err
 	}
 
 	// 写入一个 jaeger span
-	ctx, span = jaeger.StartSpan(ctx, "Api_Role_Add_End")
+	ctx, span = jaeger.StartSpan(ctx, "Api_Role_GetPermissionsForUser_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("NewID", srvResponse.NewID)
 	}
 
 	return nil
 }
 
-// 获取用户列表,默认 id 倒排序
-func (e *Role) GetList(ctx context.Context, req *api.Request, rsp *api.Response) error {
+// DeletePermissionsForUser 删除用户所属权限
+func (e *Role) DeletePermissionsForUser(ctx context.Context, req *api.Request, rsp *api.Response) error {
 
 	var err error
 
 	// 写入一个 jaeger span
-	ctx, span := jaeger.StartSpan(ctx, "Api_Role_GetList_Begin")
+	ctx, span := jaeger.StartSpan(ctx, "Api_Role_DeletePermissionsForUser_Begin")
 	if span != nil {
 		defer span.Finish()
 	}
@@ -131,65 +88,25 @@ func (e *Role) GetList(ctx context.Context, req *api.Request, rsp *api.Response)
 	namespaceID := inner.NAMESPACE_MICROSERVICE_API
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [Role][GetList] request", namespaceID)
+		inner.Mlogger.Infof("Received %s API [Role][DeletePermissionsForUser] request", namespaceID)
 	}
 
 	// 获取请求参数 - 开始
-	var pageSize, currentPageIndex int64
-	var orderBy string
-	if req.Get["PageSize"] == nil || req.Get["PageSize"].Values[0] == "" {
-		return errors.InternalServerError(namespaceID, "PageSize 不能为空")
-	} else if pageSize, err = commonutils.Int64FromString(req.Get["PageSize"].Values[0]); err != nil {
-		return errors.InternalServerError(namespaceID, "PageSize Format Error:%s", err.Error())
+	var user string
+	if req.Post["User"] == nil || req.Post["User"].Values[0] == "" {
+		return errors.InternalServerError(namespaceID, "User 不能为空")
+	} else {
+		user = req.Post["User"].Values[0]
 	}
-
-	if req.Get["CurrentPageIndex"] == nil || req.Get["CurrentPageIndex"].Values[0] == "" {
-		return errors.InternalServerError(namespaceID, "CurrentPageIndex 不能为空")
-	} else if currentPageIndex, err = commonutils.Int64FromString(req.Get["CurrentPageIndex"].Values[0]); err != nil {
-		return errors.InternalServerError(namespaceID, "CurrentPageIndex Format Error:%s", err.Error())
-
-	}
-
-	if req.Get["OrderBy"] != nil {
-		orderBy = req.Get["OrderBy"].Values[0]
-	}
-	// 获取请求参数 - 结束
 
 	// 调用服务端方法
-	srvResponse, err := e.Client.GetList(ctx, &srvProto.GetListRequest{
-		CurrentPageIndex: currentPageIndex,
-		PageSize:         pageSize,
-		OrderBy:          orderBy,
-	})
+	srvResponse, err := e.Client.DeletePermissionsForUser(ctx, &srvProto.ForUserRequest{User: user})
 	if err != nil {
 		return errors.InternalServerError(namespaceID, err.Error())
 	}
 
-	// return json
-
-	responseJSON := struct {
-		Rows  []*responseJSONRow `json:"rows"`
-		Total int64              `json:"total"`
-	}{}
-	for _, v := range srvResponse.List {
-		r := &responseJSONRow{
-			ID:             v.ID,
-			Name:           v.Name,
-			URL:            v.URL,
-			ParentID:       v.ParentID,
-			Sorts:          v.Sorts,
-			IsShowNav:      v.IsShowNav,
-			CssIcon:        v.CssIcon,
-			CreateTime:     v.CreateTime,
-			LastUpdateTime: v.LastUpdateTime,
-		}
-		responseJSON.Rows = append(responseJSON.Rows, r)
-	}
-
-	responseJSON.Total = srvResponse.TotalCount
-
-	// 对 json 序列化并输出
-	b, _ := json.Marshal(responseJSON)
+	// 输出的 json
+	b, _ := commonutils.JSONEncode(srvResponse.IsDel)
 	rsp.StatusCode = 200
 	rsp.Body = string(b)
 
@@ -199,25 +116,21 @@ func (e *Role) GetList(ctx context.Context, req *api.Request, rsp *api.Response)
 	}
 
 	// 写入一个 jaeger span
-	ctx, span = jaeger.StartSpan(ctx, "Api_Role_GetList_End")
+	ctx, span = jaeger.StartSpan(ctx, "Api_Role_DeletePermissionsForUser_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("PageSize", pageSize)
-		span.SetTag("CurrentPageIndex", currentPageIndex)
-		span.SetTag("orderBy", orderBy)
-		span.SetTag("TotalCount", srvResponse.TotalCount)
 	}
 
 	return nil
 }
 
-// 获取单个条记录，根据ID
-func (e *Role) Get(ctx context.Context, req *api.Request, rsp *api.Response) error {
+// RemoveFilteredPolicy 删除
+func (e *Role) RemoveFilteredPolicy(ctx context.Context, req *api.Request, rsp *api.Response) error {
 
 	var err error
 
 	// 写入一个 jaeger span
-	ctx, span := jaeger.StartSpan(ctx, "Api_Role_Get_Begin")
+	ctx, span := jaeger.StartSpan(ctx, "Api_Role_RemoveFilteredPolicy_Begin")
 	if span != nil {
 		defer span.Finish()
 	}
@@ -225,63 +138,49 @@ func (e *Role) Get(ctx context.Context, req *api.Request, rsp *api.Response) err
 	namespaceID := inner.NAMESPACE_MICROSERVICE_API
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [Role][Get] request", namespaceID)
+		inner.Mlogger.Infof("Received %s API [Role][RemoveFilteredPolicy] request", namespaceID)
 	}
 
 	// 获取请求参数 - 开始
-	var ID int64
-	if req.Get["ID"] != nil && req.Get["ID"].Values[0] != "0" {
-		if ID, err = commonutils.Int64FromString(req.Get["ID"].Values[0]); err != nil {
-			return errors.InternalServerError(namespaceID, "ID Format Error:%s", err.Error())
-		}
+	var role string
+	if req.Post["Role"] == nil || req.Post["Role"].Values[0] == "" {
+		return errors.InternalServerError(namespaceID, "Role 不能为空")
+	} else {
+		role = req.Post["Role"].Values[0]
 	}
-	// 获取请求参数 - 结束
 
 	// 调用服务端方法
-	srvResponse, err := e.Client.Get(ctx, &srvProto.GetRequest{
-		ID: ID,
-	})
+	srvResponse, err := e.Client.RemoveFilteredPolicy(ctx, &srvProto.RemoveFilteredPolicyRequest{Role: role})
 	if err != nil {
 		return errors.InternalServerError(namespaceID, err.Error())
 	}
 
-	// 对 json 序列化并输出
-	b, _ := json.Marshal(&responseJSONRow{
-		ID:             srvResponse.Model.ID,
-		Name:           srvResponse.Model.Name,
-		URL:            srvResponse.Model.URL,
-		ParentID:       srvResponse.Model.ParentID,
-		Sorts:          srvResponse.Model.Sorts,
-		IsShowNav:      srvResponse.Model.IsShowNav,
-		CssIcon:        srvResponse.Model.CssIcon,
-		CreateTime:     srvResponse.Model.CreateTime,
-		LastUpdateTime: srvResponse.Model.LastUpdateTime,
-	})
+	// 输出的 json
+	b, _ := commonutils.JSONEncode(srvResponse)
 	rsp.StatusCode = 200
 	rsp.Body = string(b)
 
 	// debug
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Info("rsp.Body", rsp.Body)
+		// inner.Mlogger.Info("rsp.Body", rsp.Body)
 	}
 
 	// 写入一个 jaeger span
-	ctx, span = jaeger.StartSpan(ctx, "Api_Role_Get_End")
+	ctx, span = jaeger.StartSpan(ctx, "Api_Role_RemoveFilteredPolicy_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("ID", ID)
 	}
 
 	return nil
 }
 
-// 修改用户信息
-func (e *Role) Update(ctx context.Context, req *api.Request, rsp *api.Response) error {
+// AddPolicy 添加权限
+func (e *Role) AddPolicy(ctx context.Context, req *api.Request, rsp *api.Response) error {
 
 	var err error
 
 	// 写入一个 jaeger span
-	ctx, span := jaeger.StartSpan(ctx, "Api_Role_Update_Begin")
+	ctx, span := jaeger.StartSpan(ctx, "Api_Role_AddPolicy_Begin")
 	if span != nil {
 		defer span.Finish()
 	}
@@ -289,165 +188,103 @@ func (e *Role) Update(ctx context.Context, req *api.Request, rsp *api.Response) 
 	namespaceID := inner.NAMESPACE_MICROSERVICE_API
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [Update] request", namespaceID)
+		inner.Mlogger.Infof("Received %s API [Role][AddPolicy] request", namespaceID)
 	}
 
 	// 获取请求参数 - 开始
-	var ID int64
-	var name, URL, cssIcon string
-	var parentID, sorts int64
-	var isShowNav bool
-	if req.Post["ID"] == nil || req.Post["ID"].Values[0] == "" {
-		return errors.InternalServerError(namespaceID, "ID 不能为空")
-	} else if ID, err = commonutils.Int64FromString(req.Post["ID"].Values[0]); err != nil {
-		return errors.InternalServerError(namespaceID, "ID Format Error:%s", err.Error())
+	var s1, s2, s3, s4 string
+	if req.Post["S1"] == nil || req.Post["S1"].Values[0] == "" {
+		return errors.InternalServerError(namespaceID, "S1 不能为空")
+	} else {
+		s1 = req.Post["S1"].Values[0]
 	}
+	if req.Post["S2"] == nil || req.Post["S2"].Values[0] == "" {
+		return errors.InternalServerError(namespaceID, "S2 不能为空")
+	} else {
+		s2 = req.Post["S2"].Values[0]
+	}
+	if req.Post["S3"] == nil || req.Post["S3"].Values[0] == "" {
+		return errors.InternalServerError(namespaceID, "S3 不能为空")
+	} else {
+		s3 = req.Post["S3"].Values[0]
+	}
+	if req.Post["S4"] == nil || req.Post["S4"].Values[0] == "" {
+		return errors.InternalServerError(namespaceID, "S4 不能为空")
+	} else {
+		s4 = req.Post["S4"].Values[0]
+	}
+
+	// 调用服务端方法
+	srvResponse, err := e.Client.AddPolicy(ctx, &srvProto.AddPolicyRequest{S1: s1, S2: s2, S3: s3, S4: s4})
+	if err != nil {
+		return errors.InternalServerError(namespaceID, err.Error())
+	}
+
+	// 输出的 json
+	b, _ := commonutils.JSONEncode(srvResponse)
+	rsp.StatusCode = 200
+	rsp.Body = string(b)
+
+	// debug
+	if utils.RunMode == "dev" {
+		// inner.Mlogger.Info("rsp.Body", rsp.Body)
+	}
+
+	// 写入一个 jaeger span
+	ctx, span = jaeger.StartSpan(ctx, "Api_Role_AddPolicy_End")
+	if span != nil {
+		defer span.Finish()
+	}
+
+	return nil
+}
+
+// GetRolesForUser 获取角色
+func (e *Role) GetRolesForUser(ctx context.Context, req *api.Request, rsp *api.Response) error {
+
+	var err error
+
+	// 写入一个 jaeger span
+	ctx, span := jaeger.StartSpan(ctx, "Api_Role_GetRolesForUser_Begin")
+	if span != nil {
+		defer span.Finish()
+	}
+
+	namespaceID := inner.NAMESPACE_MICROSERVICE_API
+
+	if utils.RunMode == "dev" {
+		inner.Mlogger.Infof("Received %s API [Role][GetRolesForUser] request", namespaceID)
+	}
+
+	// 获取请求参数 - 开始
+	var name string
 	if req.Post["Name"] == nil || req.Post["Name"].Values[0] == "" {
 		return errors.InternalServerError(namespaceID, "Name 不能为空")
 	} else {
 		name = req.Post["Name"].Values[0]
 	}
 
-	if req.Post["URL"] != nil && req.Post["URL"].Values[0] != "" {
-		URL = req.Post["URL"].Values[0]
-	}
-	if req.Post["CssIcon"] != nil && req.Post["CssIcon"].Values[0] != "" {
-		cssIcon = req.Post["CssIcon"].Values[0]
-	}
-
-	if req.Post["ParentID"] != nil && req.Post["ParentID"].Values[0] != "" {
-		if parentID, err = commonutils.Int64FromString(req.Post["ParentID"].Values[0]); err != nil {
-			return errors.InternalServerError(namespaceID, "ParentID 的格式不正确:%s", err.Error())
-		}
-	}
-
-	if req.Post["Sorts"] != nil && req.Post["Sorts"].Values[0] != "" {
-		if sorts, err = commonutils.Int64FromString(req.Post["Sorts"].Values[0]); err != nil {
-			return errors.InternalServerError(namespaceID, "Sorts 的格式不正确:%s", err.Error())
-		}
-	}
-	if req.Post["IsShowNav"] != nil && req.Post["IsShowNav"].Values[0] != "" && (req.Post["IsShowNav"].Values[0] == "1" || req.Post["IsShowNav"].Values[0] == "true") {
-		isShowNav = true
-	}
-	// 获取请求参数 - 结束
-
-	// 调用服务端方法获取栏目
-	srvResponseGet, err := e.Client.Get(ctx, &srvProto.GetRequest{
-		ID: ID,
-	})
-	if err != nil {
-		return errors.InternalServerError(namespaceID, err.Error())
-	}
-
-	// 调用服务端方法 - 修改栏目
-	responseUpdateModel := &srvProto.Columns{
-		ID:        srvResponseGet.Model.ID,
-		Name:      name,
-		URL:       URL,
-		ParentID:  parentID,
-		Sorts:     sorts,
-		IsShowNav: isShowNav,
-		CssIcon:   cssIcon,
-	}
-	response, err := e.Client.Update(ctx, &srvProto.UpdateRequest{Model: responseUpdateModel})
+	// 调用服务端方法
+	srvResponse, err := e.Client.GetRolesForUser(ctx, &srvProto.GetRolesForUserRequest{Name: name})
 	if err != nil {
 		return errors.InternalServerError(namespaceID, err.Error())
 	}
 
 	// 输出的 json
-	responseJSON := struct {
-		Updated int64 `json:"updated"`
-	}{}
-	responseJSON.Updated = response.Updated
-	b, _ := commonutils.JSONEncode(responseJSON)
+	b, _ := commonutils.JSONEncode(srvResponse.Roles)
 	rsp.StatusCode = 200
 	rsp.Body = string(b)
 
 	// debug
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Info("rsp.Body", rsp.Body)
+		// inner.Mlogger.Info("rsp.Body", rsp.Body)
 	}
 
 	// 写入一个 jaeger span
-	ctx, span = jaeger.StartSpan(ctx, "Api_Role_Update_End")
+	ctx, span = jaeger.StartSpan(ctx, "Api_Role_GetRolesForUser_End")
 	if span != nil {
 		defer span.Finish()
-		span.SetTag("ID", ID)
 	}
 
 	return nil
-}
-
-// 批量删除用户信息
-func (e *Role) BatchDelete(ctx context.Context, req *api.Request, rsp *api.Response) error {
-
-	var err error
-
-	// 写入一个 jaeger span
-	ctx, span := jaeger.StartSpan(ctx, "Api_Role_BatchDelete_Begin")
-	if span != nil {
-		defer span.Finish()
-	}
-
-	namespaceID := inner.NAMESPACE_MICROSERVICE_API
-
-	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [Role][BatchDelete] request", namespaceID)
-	}
-
-	// 获取请求参数 - 开始
-	var IDArray []string
-	if req.Post["IDArray"] == nil || req.Post["IDArray"].Values[0] == "" {
-		return errors.InternalServerError(namespaceID, "IDArray 不能为空")
-	} else {
-		IDArray = strings.Split(req.Post["IDArray"].Values[0], ",")
-	}
-
-	fmt.Println("IDArray", IDArray)
-	// 获取请求参数 - 结束
-
-	// 调用服务端方法获取用户
-	response, err := e.Client.BatchDelete(ctx, &srvProto.DeleteRequest{
-		IDArray: IDArray,
-	})
-
-	if err != nil {
-		return errors.InternalServerError(namespaceID, err.Error())
-	}
-
-	// 输出的 json
-	responseJSON := struct {
-		Deleted int64 `json:"deleted"`
-	}{}
-	responseJSON.Deleted = response.Deleted
-	b, _ := commonutils.JSONEncode(responseJSON)
-	rsp.StatusCode = 200
-	rsp.Body = string(b)
-
-	// debug
-	if utils.RunMode == "dev" {
-		inner.Mlogger.Info("rsp.Body", rsp.Body)
-	}
-
-	// 写入一个 jaeger span
-	ctx, span = jaeger.StartSpan(ctx, "Api_Role_BatchDelete_End")
-	if span != nil {
-		defer span.Finish()
-		span.SetTag("IDArray", strings.Join(IDArray, ","))
-	}
-
-	return nil
-}
-
-// 这里重点讲一下，proto自动生成的每一个字段都会加上omitempty，当ParentID和Sorts为0时，会不显示该字段。所以重新转义
-type responseJSONRow struct {
-	ID             int64  `json:"ID"`
-	Name           string `json:"Name"`
-	URL            string `json:"URL"`
-	ParentID       int64  `json:"ParentID"`
-	Sorts          int64  `json:"Sorts"`
-	IsShowNav      bool   `json:"IsShowNav"`
-	CssIcon        string `json:"CssIcon"`
-	CreateTime     int64  `json:"CreateTime"`
-	LastUpdateTime int64  `json:"LastUpdateTime"`
 }
