@@ -45,7 +45,7 @@ func (e *ColumnsController) GetTreeViewJSON() {
 	var result models.Result
 
 	// 获取首页 TreeView 需要用到的结构化数据
-	if list, err = e.getTreeViewBootstrap(); err != nil {
+	if list, err = e.GetTreeViewBootstrap(); err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
 		e.Data["json"] = result
@@ -151,6 +151,30 @@ func (e *ColumnsController) AddSave() {
 	}
 }
 
+// GetColumnsByID 根据 ID 获取栏目
+func (e *ColumnsController) GetColumnsByID(ID int64) (map[string]interface{}, error) {
+	var err error
+	// 拼接要发送的url参数
+	params := url.Values{}
+	params.Set("ID", strconv.FormatInt(ID, 10))
+
+	// 发送请求的路径
+	path := fmt.Sprintf("%s%s?%s",
+		inner.MicroServiceHostProt,
+		utils.TConfig.String("MicroServices::ServiceURL_Column_Get"),
+		params.Encode(),
+	)
+
+	// 临时 Json解析类
+	var responseJSON map[string]interface{}
+	// 发送 http 请求
+	if err = request.Request.SendPayload("GET", path, nil, nil, &responseJSON, false, true, false); err != nil {
+		return nil, err
+	} else {
+		return responseJSON, nil
+	}
+}
+
 // Update 修改
 func (e *ColumnsController) Update() {
 	var result models.Result
@@ -167,21 +191,11 @@ func (e *ColumnsController) Update() {
 		return
 	}
 
-	// 拼接要发送的url参数
-	params := url.Values{}
-	params.Set("ID", strconv.FormatInt(ID, 10))
-
-	// 发送请求的路径
-	path := fmt.Sprintf("%s%s?%s",
-		inner.MicroServiceHostProt,
-		utils.TConfig.String("MicroServices::ServiceURL_Column_Get"),
-		params.Encode(),
-	)
-
 	// 临时 Json解析类
-	var responseJson map[string]interface{}
+	var responseJSON map[string]interface{}
+
 	// 发送 http 请求
-	if err = request.Request.SendPayload("GET", path, nil, nil, &responseJson, false, true, false); err != nil {
+	if responseJSON, err = e.GetColumnsByID(ID); err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
 		e.Data["json"] = result
@@ -197,9 +211,9 @@ func (e *ColumnsController) Update() {
 		e.ServeJSON()
 		return
 	}
-	fmt.Println(responseJson)
+	fmt.Println(responseJSON)
 	// 设置所属的上级选中
-	parentID := int64(responseJson["ParentID"].(float64))
+	parentID := int64(responseJSON["ParentID"].(float64))
 	// 设置 HTMLSelect 选中
 	for _, v := range HTMLSelect {
 		if v.ID == parentID {
@@ -207,11 +221,11 @@ func (e *ColumnsController) Update() {
 			break
 		}
 	}
-	fmt.Println(responseJson)
+	fmt.Println(responseJSON)
 	//set Data
 	versionAdminURL := e.GetVersionAdminBaseURL()
 
-	e.Data["Model"] = responseJson
+	e.Data["Model"] = responseJSON
 	e.Data["ParentList"] = HTMLSelect
 	e.Data["title"] = fmt.Sprintf("修改%s", baseTitle)
 	e.Data["UpdateSaveUrl"] = fmt.Sprintf("%s/%s/updatesave", versionAdminURL, TemplageBaseURL)
@@ -287,11 +301,11 @@ func (e *ColumnsController) BatchDelete() {
 	path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::ServiceURL_Column_BatchDelete"))
 
 	// 临时 Json解析类
-	responseJson := struct {
+	responseJSON := struct {
 		Deleted int64
 	}{}
 	// 发送 http 请求
-	if err = request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJson, false, true, false); err != nil {
+	if err = request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJSON, false, true, false); err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
 		e.Data["json"] = result
@@ -419,7 +433,7 @@ func (e *ColumnsController) getTreeStructRecursive(m *ColumnRow, list []*ColumnR
 //--------------Tree View
 
 // GetTreeViewBootstrap GetTreeViewBootstrap
-func (e *ColumnsController) getTreeViewBootstrap() ([]*models.TreeView, error) {
+func (e *ColumnsController) GetTreeViewBootstrap() ([]*models.TreeView, error) {
 
 	var err error
 	var apiColumns []*ColumnRow

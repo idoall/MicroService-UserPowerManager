@@ -96,10 +96,10 @@
           cache: false,
           dataType: 'json',
           success: function (data) {
+              layer.close(loading)
               if(data.code!=0){
                   swal("错误提示",data.msg);
               }else{
-                  layer.close(loading)
                   window.location.href = window.location.href;
               }
           },

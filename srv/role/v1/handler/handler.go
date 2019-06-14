@@ -31,12 +31,10 @@ func (e *SrvRole) GetPermissionsForUser(ctx context.Context, req *proto.ForUserR
 
 	//取出用户组的所有权限
 	columnPowerList := RoleS.GetPermissionsForUser("usergroup_" + req.User)
+
+	// 输出权限列表
 	for _, cv := range columnPowerList {
-		twoString := []*proto.TwoString{
-			&proto.TwoString{Two: cv},
-		}
-		rep.One = twoString
-		// append(rep.One, twoString)
+		rep.One = append(rep.One, &proto.TwoString{Two: cv})
 	}
 
 	// 写入一个 jaeger span
@@ -94,9 +92,7 @@ func (e *SrvRole) RemoveFilteredPolicy(ctx context.Context, req *proto.RemoveFil
 
 	//移除资源
 	removeName := "usergroup_" + req.Role
-	if !RoleS.RemoveFilteredPolicy(0, removeName) {
-		return errors.BadRequest(namespace_ID, "删除失败")
-	}
+	RoleS.RemoveFilteredPolicy(0, removeName)
 
 	// 写入一个 jaeger span
 	ctx, span = jaeger.StartSpan(ctx, "Srv_Role_RemoveFilteredPolicy_End")
@@ -108,6 +104,7 @@ func (e *SrvRole) RemoveFilteredPolicy(ctx context.Context, req *proto.RemoveFil
 	return nil
 }
 
+// AddPolicy 添加权限
 func (e *SrvRole) AddPolicy(ctx context.Context, req *proto.AddPolicyRequest, rep *proto.Empty) error {
 	// 写入一个 jaeger span
 	ctx, span := jaeger.StartSpan(ctx, "Srv_Role_AddPolicy_Begin")

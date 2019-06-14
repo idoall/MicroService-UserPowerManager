@@ -13,14 +13,23 @@ const (
 
 	// 注册的命名空间 ID - go micro api
 	NAMESPACE_MICROSERVICE_API = "go.micro.api.mshk.api.v1"
+
+	// 注册的命名空间 ID - go micro api Users
+	NAMESPACE_MICROSERVICE_APIUSERS = "go.micro.api.mshk.v1.users"
+	// 注册的命名空间 ID - go micro api UsersGroup
+	NAMESPACE_MICROSERVICE_APIUSERSGROUP = "go.micro.api.mshk.v1.usersgroup"
+	// 注册的命名空间 ID - go micro api role
+	NAMESPACE_MICROSERVICE_APIROLE = "go.micro.api.mshk.v1.role"
+	// 注册的命名空间 ID - go micro api column
+	NAMESPACE_MICROSERVICE_APICOLUMNS = "go.micro.api.mshk.v1.columns"
 	// 注册的命名空间 ID - go micro server - Users
-	NAMESPACE_MICROSERVICE_SRVUSERS = "go.micro.srv.mshk.v1.srvusers"
+	NAMESPACE_MICROSERVICE_SRVUSERS = "go.micro.srv.mshk.v1.users"
 	// 注册的命名空间 ID - go micro server - UsersGroup
-	NAMESPACE_MICROSERVICE_SRVUSERSGROUP = "go.micro.srv.mshk.v1.srvusersgroup"
+	NAMESPACE_MICROSERVICE_SRVUSERSGROUP = "go.micro.srv.mshk.v1.usersgroup"
 	// 注册的命名空间 ID - go micro server - Columns
-	NAMESPACE_MICROSERVICE_SRVCOLUMNS = "go.micro.srv.mshk.v1.srvcolumns"
+	NAMESPACE_MICROSERVICE_SRVCOLUMNS = "go.micro.srv.mshk.v1.columns"
 	// 注册的命名空间 ID - go micro server - HistoryUserLogin
-	NAMESPACE_MICROSERVICE_SRVHISTORYUSERLOGIN = "go.micro.srv.mshk.v1.srvhistoryuserlogin"
+	NAMESPACE_MICROSERVICE_SRVHISTORYUSERLOGIN = "go.micro.srv.mshk.v1.historyuserlogin"
 	// 注册的命名空间 ID - go micro server - Role
-	NAMESPACE_MICROSERVICE_SRVROLE = "go.micro.srv.mshk.v1.srvrole"
+	NAMESPACE_MICROSERVICE_SRVROLE = "go.micro.srv.mshk.v1.role"
 )

@@ -8,8 +8,8 @@ import (
 
 	"github.com/micro/go-micro"
 
-	"github.com/idoall/MicroService-UserPowerManager/api/role/v1/handler"
-	srvProto "github.com/idoall/MicroService-UserPowerManager/srv/role/v1/proto"
+	"github.com/idoall/MicroService-UserPowerManager/api/usersgroup/v1/handler"
+	srvProto "github.com/idoall/MicroService-UserPowerManager/srv/usersgroup/v1/proto"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
 
 	// 名称  say 一定要和在proto中定义的一样
 	service := micro.NewService(
-		micro.Name(inner.NAMESPACE_MICROSERVICE_APIROLE),
+		micro.Name(inner.NAMESPACE_MICROSERVICE_APIUSERSGROUP),
 	)
 
 	// parse command line flags
@@ -33,8 +33,8 @@ func main() {
 
 	service.Server().Handle(
 		service.Server().NewHandler(
-			&handler.Role{
-				Client: srvProto.NewSrvRoleService(inner.NAMESPACE_MICROSERVICE_SRVROLE, service.Client()),
+			&handler.UsersGroup{
+				Client: srvProto.NewProtoUsersGroupService(inner.NAMESPACE_MICROSERVICE_SRVUSERSGROUP, service.Client()),
 			},
 		),
 	)

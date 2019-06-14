@@ -65,3 +65,20 @@ func (e *AdminBaseController) AppendCustomScripts(list []string) {
 	}
 	e.Data["customScripts"] = scriptList
 }
+
+// GetCurrentUser 返回用户ID
+func (e *AdminBaseController) GetCurrentUser() (int64, error) {
+	// var user *models.User
+
+	// userIDSession := e.GetSession(internal.SESSIONKEYUSERID)
+	// if userIDSession == nil {
+	// 	if internal.AdminVerifyLogin() {
+	// 		return user, errors.New("用户不存在")
+	// 	} else {
+	// 		return user, nil
+	// 	}
+	// }
+
+	// return new(models.User).GetOne(userIDSession.(int64))
+	return int64(0), nil
+}

@@ -8,7 +8,8 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/casbin/casbin"
-	xormadapter "github.com/casbin/xorm-adapter"
+	// xormadapter "github.com/casbin/xorm-adapter"
+	beegoormadapter "github.com/casbin/beego-orm-adapter"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/idoall/MicroService-UserPowerManager/log4"
 	"github.com/idoall/MicroService-UserPowerManager/srv/role/v1/handler"
@@ -38,23 +39,23 @@ func init() {
 
 	dbConnStr := GetDBConnStr()
 	// 注册数据库
-	if err = orm.RegisterDataBase("default", "mysql", dbConnStr, 0, 1000); err != nil {
-		inner.Mlogger.Fatalf(fmt.Sprintf("orm.RegisterDataBase dbStr:%s Error:", dbConnStr) + err.Error())
-		return
-	} else if utils.RunMode == "dev" {
-		inner.Mlogger.Info("数据库注册成功")
-		inner.Mlogger.Infof("DBConStr:%s", dbConnStr)
-	}
+	// if err = orm.RegisterDataBase("default", "mysql", dbConnStr, 0, 1000); err != nil {
+	// 	inner.Mlogger.Fatalf(fmt.Sprintf("orm.RegisterDataBase dbStr:%s Error:", dbConnStr) + err.Error())
+	// 	return
+	// } else if utils.RunMode == "dev" {
+	// 	inner.Mlogger.Info("数据库注册成功")
+	// 	inner.Mlogger.Infof("DBConStr:%s", dbConnStr)
+	// }
 
 	// Initialize a Beego ORM adapter and use it in a Casbin enforcer:
 	// The adapter will use the MySQL database named "casbin".
 	// If it doesn't exist, the adapter will create it automatically.
-	a := xormadapter.NewAdapter("mysql", dbConnStr)
+	// a := xormadapter.NewAdapter("mysql", dbConnStr)
 
 	// Or you can use an existing DB "abc" like this:
 	// The adapter will use the table named "casbin_rule".
 	// If it doesn't exist, the adapter will create it automatically.
-	// a := beegoormadapter.NewAdapter("mysql", "mysql_username:mysql_password@tcp(127.0.0.1:3306)/abc", true)
+	a := beegoormadapter.NewAdapter("mysql", dbConnStr, true)
 
 	handler.RoleS = casbin.NewEnforcer("conf/rbac_model.conf", a)
 	// fmt.Println(RoleS.Enforce("alice", "data1", "read"))

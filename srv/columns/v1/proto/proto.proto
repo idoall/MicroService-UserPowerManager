@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+// import public "google/protobuf/timestamp.proto"; 
+package ProtoColumns;
+
+// 栏目相关操作
+service ProtoColumns {
+	// 添回
+	rpc Add(AddRequest) returns (AddResponse) {}
+	// 获取列表
+	rpc GetList(GetListRequest) returns (GetListResponse) {}
+	// 获取单个信息
+	rpc Get(GetRequest) returns (GetResponse) {}
+	// 修改
+	rpc Update(UpdateRequest) returns (UpdateResponse) {}
+	// 批量删除
+	rpc BatchDelete(DeleteRequest) returns (DeleteResponse) {}
+}
+
+
+message Columns {
+	// 编号Id
+	int64 ID = 1;
+	// 栏目名称
+	string Name = 2;
+	// URL
+	string URL = 3;
+	// 所属栏目Id
+	int64 ParentID = 4;
+	// 排序
+	int64 Sorts = 5;
+	// 是否显示在导航
+	bool IsShowNav = 6;
+	// css图标样式
+	string CssIcon = 7;
+	// 创建时间
+	int64 CreateTime = 8;
+	// 最后是错新时间
+	int64 LastUpdateTime = 9;
+	// repeated Columns Nodes = 10;
+}
+
+message AddRequest {
+	Columns Model = 1;
+}
+
+message AddResponse {
+	int64 NewID = 1;
+}
+
+message GetListRequest{
+	int64 PageSize = 1;
+	int64 CurrentPageIndex = 2;
+	string OrderBy = 3;
+}
+
+message GetListResponse{
+	int64 TotalCount = 1;
+	repeated Columns List = 2;
+}
+
+message GetRequest {
+	int64 ID = 1;
+}
+
+message GetResponse {
+	Columns Model = 1;
+}
+
+message UpdateRequest {
+	Columns Model = 1;
+}
+
+message UpdateResponse {
+	// 是否更新成功
+	int64 Updated = 1;
+}
+
+message DeleteRequest {
+	repeated string IDArray = 1;
+}
+
+message DeleteResponse {
+	// 是否删除成功,批量删除不需要返回值
+	int64 Deleted = 1;
+}

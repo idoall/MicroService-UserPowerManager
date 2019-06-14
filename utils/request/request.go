@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"net/http/httputil"
 
-	"github.com/idoall/TokenExchangeCommon/commonutils"
 	"github.com/idoall/MicroService-UserPowerManager/utils/inner"
+	"github.com/idoall/TokenExchangeCommon/commonutils"
 )
 
 var Request *Requester
@@ -108,13 +108,15 @@ func (r *Requester) DoRequest(req *http.Request, method, path string, headers ma
 		} else {
 			return fmt.Errorf("StatusCode:%d %s %s", resp.StatusCode, rawResponse["detail"].(string), rawResponse["status"].(string))
 		}
-	} else if resp.StatusCode == 200 && result != nil {
-		err := commonutils.JSONDecode(contents, result)
-		if err != nil {
-			return fmt.Errorf("Err:%s, Content:%s", err.Error(), string(contents))
+	} else if resp.StatusCode == 200 {
+		if result != nil {
+			err := commonutils.JSONDecode(contents, result)
+			if err != nil {
+				return fmt.Errorf("Err:%s, Content:%s", err.Error(), string(contents))
+			}
 		}
 	} else {
-		return fmt.Errorf("未知错误:%s", string(contents))
+		return fmt.Errorf("[%d]未知错误:%s", resp.StatusCode, string(contents))
 	}
 
 	return nil

@@ -60,7 +60,7 @@ func init() {
 		}),
 		// admin 后台
 		beego.NSNamespace(fmt.Sprintf("/%s", admin.TemplageAdminBaseURL),
-			// beego.NSBefore(filterAdminUserLoginGateWay), //权限验证
+			beego.NSBefore(filterAdminUserLoginGateWay), //权限验证
 			// 用户管理
 			beego.NSNamespace(fmt.Sprintf("/%s", users.TemplageBaseURL),
 				// 首页，默认调用 Get 方法
@@ -156,17 +156,17 @@ func filterAdminUserLoginGateWay(ctx *context.Context) {
 	path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::ServiceURL_User_ValidToken"))
 
 	// 临时 Json解析类
-	responseJson := struct {
+	responseJSON := struct {
 		TokenString string `json:"tokenstring"`
 	}{}
 	// 发送 http 请求
-	if err := request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJson, false, true, false); err != nil {
+	if err := request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJSON, false, true, false); err != nil {
 		inner.Mlogger.Error(err)
 		// 转到登录
 		ctx.Redirect(302, fmt.Sprintf("/%s%s?Referer=", admin.AdminBaseRoterVersion, utils.TConfig.String("WebSite::URL_Login"))+url.QueryEscape(ctx.Request.RequestURI))
 		return
 	} else {
 		// 写入 cookie,10分钟后过期
-		ctx.Output.Cookie("token", responseJson.TokenString, 60*10)
+		ctx.Output.Cookie("token", responseJSON.TokenString, 60*10)
 	}
 }

@@ -33,7 +33,7 @@ func (e *Role) GetPermissionsForUser(ctx context.Context, req *api.Request, rsp 
 		defer span.Finish()
 	}
 
-	namespaceID := inner.NAMESPACE_MICROSERVICE_API
+	namespaceID := inner.NAMESPACE_MICROSERVICE_APIROLE
 
 	// debug
 	if utils.RunMode == "dev" {
@@ -42,10 +42,10 @@ func (e *Role) GetPermissionsForUser(ctx context.Context, req *api.Request, rsp 
 
 	// 获取请求参数 - 开始
 	var user string
-	if req.Post["User"] == nil || req.Post["User"].Values[0] == "" {
+	if req.Get["User"] == nil || req.Get["User"].Values[0] == "" {
 		return errors.InternalServerError(namespaceID, "User 不能为空")
 	} else {
-		user = req.Post["User"].Values[0]
+		user = req.Get["User"].Values[0]
 	}
 
 	// 调用服务端方法
@@ -85,7 +85,7 @@ func (e *Role) DeletePermissionsForUser(ctx context.Context, req *api.Request, r
 		defer span.Finish()
 	}
 
-	namespaceID := inner.NAMESPACE_MICROSERVICE_API
+	namespaceID := inner.NAMESPACE_MICROSERVICE_APIROLE
 
 	if utils.RunMode == "dev" {
 		inner.Mlogger.Infof("Received %s API [Role][DeletePermissionsForUser] request", namespaceID)
@@ -135,7 +135,7 @@ func (e *Role) RemoveFilteredPolicy(ctx context.Context, req *api.Request, rsp *
 		defer span.Finish()
 	}
 
-	namespaceID := inner.NAMESPACE_MICROSERVICE_API
+	namespaceID := inner.NAMESPACE_MICROSERVICE_APIROLE
 
 	if utils.RunMode == "dev" {
 		inner.Mlogger.Infof("Received %s API [Role][RemoveFilteredPolicy] request", namespaceID)
@@ -150,13 +150,13 @@ func (e *Role) RemoveFilteredPolicy(ctx context.Context, req *api.Request, rsp *
 	}
 
 	// 调用服务端方法
-	srvResponse, err := e.Client.RemoveFilteredPolicy(ctx, &srvProto.RemoveFilteredPolicyRequest{Role: role})
+	_, err = e.Client.RemoveFilteredPolicy(ctx, &srvProto.RemoveFilteredPolicyRequest{Role: role})
 	if err != nil {
 		return errors.InternalServerError(namespaceID, err.Error())
 	}
 
 	// 输出的 json
-	b, _ := commonutils.JSONEncode(srvResponse)
+	b, _ := commonutils.JSONEncode("")
 	rsp.StatusCode = 200
 	rsp.Body = string(b)
 
@@ -185,7 +185,7 @@ func (e *Role) AddPolicy(ctx context.Context, req *api.Request, rsp *api.Respons
 		defer span.Finish()
 	}
 
-	namespaceID := inner.NAMESPACE_MICROSERVICE_API
+	namespaceID := inner.NAMESPACE_MICROSERVICE_APIROLE
 
 	if utils.RunMode == "dev" {
 		inner.Mlogger.Infof("Received %s API [Role][AddPolicy] request", namespaceID)
@@ -203,11 +203,11 @@ func (e *Role) AddPolicy(ctx context.Context, req *api.Request, rsp *api.Respons
 	} else {
 		s2 = req.Post["S2"].Values[0]
 	}
-	if req.Post["S3"] == nil || req.Post["S3"].Values[0] == "" {
-		return errors.InternalServerError(namespaceID, "S3 不能为空")
-	} else {
-		s3 = req.Post["S3"].Values[0]
-	}
+	// if req.Post["S3"] == nil || req.Post["S3"].Values[0] == "" {
+	// 	return errors.InternalServerError(namespaceID, "S3 不能为空")
+	// } else {
+	// 	s3 = req.Post["S3"].Values[0]
+	// }
 	if req.Post["S4"] == nil || req.Post["S4"].Values[0] == "" {
 		return errors.InternalServerError(namespaceID, "S4 不能为空")
 	} else {
@@ -250,7 +250,7 @@ func (e *Role) GetRolesForUser(ctx context.Context, req *api.Request, rsp *api.R
 		defer span.Finish()
 	}
 
-	namespaceID := inner.NAMESPACE_MICROSERVICE_API
+	namespaceID := inner.NAMESPACE_MICROSERVICE_APIROLE
 
 	if utils.RunMode == "dev" {
 		inner.Mlogger.Infof("Received %s API [Role][GetRolesForUser] request", namespaceID)

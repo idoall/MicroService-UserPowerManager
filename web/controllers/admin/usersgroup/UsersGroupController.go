@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/idoall/MicroService-UserPowerManager/utils"
 	"github.com/idoall/MicroService-UserPowerManager/utils/inner"
 	"github.com/idoall/MicroService-UserPowerManager/utils/request"
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin"
+	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin/columns"
 	"github.com/idoall/MicroService-UserPowerManager/web/models"
 )
 
@@ -93,6 +95,7 @@ func (e *UsersGroupController) Get() {
 	e.Data["AddUrl"] = fmt.Sprintf("%s/%s/add", versionAdminURL, TemplageBaseURL)
 	e.Data["UpdateUrl"] = fmt.Sprintf("%s/%s/update?id=", versionAdminURL, TemplageBaseURL)
 	e.Data["DelUrl"] = fmt.Sprintf("%s/%s/delete?id=", versionAdminURL, TemplageBaseURL)
+	e.Data["URL_ColumnPower"] = fmt.Sprintf("%s/%s/ColumnPower?id=", versionAdminURL, TemplageBaseURL)
 	e.Data["BatchDelUrl"] = fmt.Sprintf("%s/%s/batchdelete", versionAdminURL, TemplageBaseURL)
 	e.Data["JSONListUrl"] = fmt.Sprintf("%s/%s/GetListJSON", versionAdminURL, TemplageBaseURL)
 
@@ -421,15 +424,37 @@ func (e *UsersGroupController) ColumnPower() {
 
 // GetColumnPowerTreeViewJSON Default Json
 func (e *UsersGroupController) GetColumnPowerTreeViewJSON() {
+	var err error
 	var list []*models.TreeView
 	var result models.Result
 
+	// 拼接要发送的url参数
+	params := url.Values{}
+	params.Set("User", e.GetString("id"))
+
+	// 发送请求的路径
+	path := fmt.Sprintf("%s%s?%s",
+		inner.MicroServiceHostProt,
+		utils.TConfig.String("MicroServices::ServiceURL_Role_GetPermissionsForUser"),
+		params.Encode(),
+	)
+
+	// 临时 Json解析类
+	var responseJSON []map[string][]string
+	// 发送 http 请求
+	if err = request.Request.SendPayload("GET", path, nil, nil, &responseJSON, false, true, false); err != nil {
+		result.Code = -1
+		result.Msg = err.Error()
+		e.Data["json"] = result
+		e.ServeJSON()
+		return
+	}
+
 	//取出用户组的所有权限
-	columnPowerList := admin.RoleS.GetPermissionsForUser("usergroup_" + e.GetString("id"))
+	columnPowerList := responseJSON
+	// columnPowerList := admin.RoleS.GetPermissionsForUser("usergroup_" + e.GetString("id"))
 
-	// fmt.Println(columnPowerList)
-
-	list, err := new(models.ColumnPower).GetTreeViewBootstrap()
+	list, err = new(columns.ColumnsController).GetTreeViewBootstrap()
 	if err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
@@ -440,7 +465,7 @@ func (e *UsersGroupController) GetColumnPowerTreeViewJSON() {
 
 	for _, v := range list {
 		for _, cv := range columnPowerList {
-			cid, _ := strconv.ParseInt(cv[1], 10, 64)
+			cid, _ := strconv.ParseInt(cv["Two"][1], 10, 64)
 			if v.ID == cid {
 				v.State = &models.TreeViewState{Checked: true, Expanded: true}
 			}
@@ -456,51 +481,72 @@ func (e *UsersGroupController) GetColumnPowerTreeViewJSON() {
 	e.ServeJSON()
 }
 
-// getRecursive 递归获取下一级
-// func (e *UsersGroupController) getRecursiveColumnPowerTreeView(columnPowerList [][]string, list []*models.TreeView) {
+// getRecursiveColumnPowerTreeView 递归获取下一级
+func (e *UsersGroupController) getRecursiveColumnPowerTreeView(columnPowerList []map[string][]string, list []*models.TreeView) {
 
-// 	// for _, v := range list {
-// 	// 	for _, cv := range columnPowerList {
-// 	// 		cid, _ := strconv.ParseInt(cv[1], 10, 64)
-// 	// 		if v.ID == cid {
-// 	// 			v.State = &models.TreeViewState{Checked: true, Expanded: true}
-// 	// 		}
-// 	// 		if v.Nodes != nil {
-// 	// 			e.getRecursiveColumnPowerTreeView(columnPowerList, v.Nodes)
-// 	// 		}
-// 	// 	}
-// 	// }
-// }
+	for _, v := range list {
+		for _, cv := range columnPowerList {
+			cid, _ := strconv.ParseInt(cv["Two"][1], 10, 64)
+			if v.ID == cid {
+				v.State = &models.TreeViewState{Checked: true, Expanded: true}
+			}
+			if v.Nodes != nil {
+				e.getRecursiveColumnPowerTreeView(columnPowerList, v.Nodes)
+			}
+		}
+	}
+}
 
 // ColumnPowerSave 展示用户组-权限页面-保存
 func (e *UsersGroupController) ColumnPowerSave() {
-	// var result models.Result
-	// idArray := strings.Split(e.GetString("ids"), ",")
-	// id := e.GetString("id")
-	// action := "GET"
+	var err error
+	var result models.Result
+	idArray := strings.Split(e.GetString("ids"), ",")
+	id := e.GetString("id")
+	action := "GET"
 
-	// //先删除所有的权限
-	// admin.RoleS.RemoveFilteredPolicy(0, "usergroup_"+id)
-	// // if !boo {
-	// // 	result.Code = -1
-	// // 	result.Msg = "删除权限失败"
-	// // 	e.Data["json"] = result
-	// // 	e.ServeJSON()
-	// // 	return
-	// // }
+	//---------------先删除所有的权限
+	// 拼接要发送的url参数
+	params := url.Values{}
+	params.Set("Role", e.GetString("id"))
 
-	// // return
-	// // fmt.Println("admin.RoleS.GetPermissionsForUser", admin.RoleS.GetPermissionsForUser("usergroup_"+id))
+	// 发送请求的路径
+	path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::ServiceURL_Role_RemoveFilteredPolicy"))
 
-	// for _, v := range idArray {
-	// 	mid, _ := strconv.ParseInt(v, 10, 64)
-	// 	m, _ := new(models.ColumnPower).GetOne(mid)
-	// 	//保存用户组的权限
-	// 	admin.RoleS.AddPolicy("usergroup_"+id, strconv.FormatInt(m.ID, 10), m.URL, action)
-	// }
+	// 发送 http 请求
+	if err = request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), nil, false, true, false); err != nil {
+		result.Code = -1
+		result.Msg = err.Error()
+		e.Data["json"] = result
+		e.ServeJSON()
+		return
+	}
 
-	// // admin.RoleS.LoadPolicy()
-	// result.Code = 0
-	// e.Data["json"] = result
-	// e.ServeJSON()
+	for _, v := range idArray {
+		mid, _ := strconv.ParseInt(v, 10, 64)
+		m, _ := new(columns.ColumnsController).GetColumnsByID(mid)
+		//保存用户组的权限
+		params = url.Values{}
+		params.Set("S1", "usergroup_"+id)
+		params.Set("S2", v)
+		params.Set("S3", m["URL"].(string))
+		params.Set("S4", action)
+
+		// 发送请求的路径
+		path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::ServiceURL_Role_AddPolicy"))
+
+		// 发送 http 请求
+		if err = request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), nil, false, true, false); err != nil {
+			result.Code = -1
+			result.Msg = err.Error()
+			e.Data["json"] = result
+			e.ServeJSON()
+			return
+		}
+	}
+
+	// admin.RoleS.LoadPolicy()
+	result.Code = 0
+	e.Data["json"] = result
+	e.ServeJSON()
 }
