@@ -17,3 +17,9 @@ INSERT INTO `columns` VALUES (10, '显示删除和批量删除用户组列表', 
 INSERT INTO `columns` VALUES (11, '查看所有用户组列表', '', 8, 0, 0, '', '2019-04-22 00:15:34', '2019-04-22 00:15:34');
 INSERT INTO `columns` VALUES (12, '登录历史记录', '/v1/admin/historyuserlogin', 3, 0, 1, '', '2019-04-22 00:16:05', '2019-04-22 00:16:05');
 COMMIT;
+
+BEGIN;
+INSERT INTO `users_group` VALUES (1, '普通用户组', 0, 0, '', '2019-06-16 02:54:37', '2019-06-16 02:54:37');
+INSERT INTO `users_group` VALUES (2, '管理员', 0, 0, '', '2019-06-16 02:54:44', '2019-06-16 02:54:44');
+INSERT INTO `users_group` VALUES (3, '超级管理员', 0, 0, '', '2019-06-16 02:54:54', '2019-06-16 02:54:54');
+COMMIT;

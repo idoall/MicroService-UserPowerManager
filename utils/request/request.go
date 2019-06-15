@@ -38,13 +38,13 @@ func IsValidMethod(method string) bool {
 	return commonutils.StringDataCompareUpper(supportedMethods, method)
 }
 
-// WebPOSTSendPayload 封闭统一请求微服务的 POST 方法
+// WebPOSTSendPayload 封装统一请求微服务的 POST 方法
 func (r *Requester) WebPOSTSendPayload(configParam string, body io.Reader, result interface{}) error {
 	path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::"+configParam))
 	return r.SendPayload("POST", path, nil, body, result, false, true, false)
 }
 
-// WebGETSendPayload 封闭统一请求微服务的 GET 方法
+// WebGETSendPayload 封装统一请求微服务的 GET 方法
 func (r *Requester) WebGETSendPayload(configParam string, params url.Values, result interface{}) error {
 	// 发送请求的路径
 	path := fmt.Sprintf("%s%s?%s",

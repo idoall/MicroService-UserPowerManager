@@ -6,8 +6,6 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/idoall/MicroService-UserPowerManager/utils"
-	"github.com/idoall/MicroService-UserPowerManager/utils/inner"
 	"github.com/idoall/MicroService-UserPowerManager/utils/request"
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin"
 	"github.com/idoall/MicroService-UserPowerManager/web/models"
@@ -132,15 +130,12 @@ func (e *ColumnsController) AddSave() {
 	params.Set("Sorts", e.GetString("sorts"))
 	params.Set("IsShowNav", e.GetString("isshownav"))
 
-	// 发送请求的路径
-	path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::ServiceURL_Column_Add"))
-
 	// 临时 Json解析类
 	responseJSON := struct {
 		NewID int64 `json:"newid"`
 	}{}
 	// 发送 http 请求
-	if err = request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJSON, false, true, false); err != nil {
+	if err = request.Request.WebPOSTSendPayload("ServiceURL_Column_Add", bytes.NewBufferString(params.Encode()), &responseJSON); err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
 		e.Data["json"] = result
@@ -158,17 +153,10 @@ func (e *ColumnsController) GetColumnsByID(ID int64) (map[string]interface{}, er
 	params := url.Values{}
 	params.Set("ID", strconv.FormatInt(ID, 10))
 
-	// 发送请求的路径
-	path := fmt.Sprintf("%s%s?%s",
-		inner.MicroServiceHostProt,
-		utils.TConfig.String("MicroServices::ServiceURL_Column_Get"),
-		params.Encode(),
-	)
-
 	// 临时 Json解析类
 	var responseJSON map[string]interface{}
 	// 发送 http 请求
-	if err = request.Request.SendPayload("GET", path, nil, nil, &responseJSON, false, true, false); err != nil {
+	if err = request.Request.WebGETSendPayload("ServiceURL_Column_Get", params, &responseJSON); err != nil {
 		return nil, err
 	} else {
 		return responseJSON, nil
@@ -211,7 +199,7 @@ func (e *ColumnsController) Update() {
 		e.ServeJSON()
 		return
 	}
-	fmt.Println(responseJSON)
+
 	// 设置所属的上级选中
 	parentID := int64(responseJSON["ParentID"].(float64))
 	// 设置 HTMLSelect 选中
@@ -221,7 +209,7 @@ func (e *ColumnsController) Update() {
 			break
 		}
 	}
-	fmt.Println(responseJSON)
+
 	//set Data
 	versionAdminURL := e.GetVersionAdminBaseURL()
 
@@ -257,15 +245,12 @@ func (e *ColumnsController) UpdateSave() {
 	params.Set("Sorts", e.GetString("sorts"))
 	params.Set("IsShowNav", e.GetString("isshownav"))
 
-	// 发送请求的路径
-	path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::ServiceURL_Column_Update"))
-
 	// 临时 Json解析类
 	responseJSON := struct {
 		Updated int64 `json:"updated"`
 	}{}
 	// 发送 http 请求
-	if err = request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJSON, false, true, false); err != nil {
+	if err = request.Request.WebPOSTSendPayload("ServiceURL_Column_Update", bytes.NewBufferString(params.Encode()), &responseJSON); err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
 		e.Data["json"] = result
@@ -297,15 +282,12 @@ func (e *ColumnsController) BatchDelete() {
 	params.Set("IDArray", userIds)
 	fmt.Println(params.Encode())
 
-	// 发送请求的路径
-	path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::ServiceURL_Column_BatchDelete"))
-
 	// 临时 Json解析类
 	responseJSON := struct {
 		Deleted int64
 	}{}
 	// 发送 http 请求
-	if err = request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJSON, false, true, false); err != nil {
+	if err = request.Request.WebPOSTSendPayload("ServiceURL_Column_BatchDelete", bytes.NewBufferString(params.Encode()), &responseJSON); err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
 		e.Data["json"] = result
@@ -332,15 +314,8 @@ func (e *ColumnsController) getApiServiceColumnRow() ([]*ColumnRow, error) {
 	params.Set("PageSize", fmt.Sprintf("%d", 1000))
 	params.Set("CurrentPageIndex", fmt.Sprintf("%d", 1))
 
-	// 发送请求的路径
-	path := fmt.Sprintf("%s%s?%s",
-		inner.MicroServiceHostProt,
-		utils.TConfig.String("MicroServices::ServiceURL_Column_GetList"),
-		params.Encode(),
-	)
-
 	// 发送 http 请求
-	if err = request.Request.SendPayload("GET", path, nil, nil, &jsonList, false, false, false); err != nil {
+	if err = request.Request.WebGETSendPayload("ServiceURL_Column_GetList", params, &jsonList); err != nil {
 		return nil, err
 	} else {
 		return jsonList.Rows, nil
