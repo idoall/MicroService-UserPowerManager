@@ -1,48 +1,54 @@
-package admin
+package index
 
 import (
 	"bytes"
 	"fmt"
 
-	"github.com/astaxie/beego"
+	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin"
 	"github.com/idoall/TokenExchangeCommon/commonutils"
 	"gitlab.mshk.top/TokenExchange/tokenexchangemodels/models"
 )
 
-var BaseURL = "admin"
+var BaseURL = "in"
+var (
+	TemplageBaseURL = "index"
+	baseTitle       = "首页"
+)
 
-// Admin struct
-type Admin struct {
-	AdminBaseController
+// IndexController struct
+type IndexController struct {
+	admin.AdminBaseController
 }
 
 // Get 获取首页信息
-func (e *Admin) Get() {
+func (e *IndexController) Get() {
 
-	// fmt.Println(e.Ctx.Input.)
+	fmt.Println("IndexController")
 
-	var result models.Result
+	// var result models.Result
 
-	user, err := e.GetCurrentUser()
-	if err != nil {
-		result.Code = -1
-		result.Msg = err.Error()
-		e.Data["json"] = result
-		e.ServeJSON()
-		return
-	}
+	// user, err := e.GetCurrentUser()
+	// if err != nil {
+	// 	result.Code = -1
+	// 	result.Msg = err.Error()
+	// 	e.Data["json"] = result
+	// 	e.ServeJSON()
+	// 	return
+	// }
 
-	e.Data["User"] = user
-	e.Data["LoginOutURL"] = beego.AppConfig.String("WebSite::URL_LoginOut")
+	// set Data
+	// versionAdminURL := e.GetVersionAdminBaseURL()
+	// e.Data["User"] = user
+	// e.Data["LoginOutURL"] = beego.AppConfig.String("WebSite::URL_Logout")
 
 	e.SetMortStype()
 	e.SetMortScript()
 	e.appendCustomScripts()
-	e.TplName = "admin/index.html"
+	e.TplName = fmt.Sprintf("%s/%s/index.html", admin.TemplageAdminBaseURL, TemplageBaseURL)
 }
 
 // GetAdminMenuHtml Html
-func (e *Admin) GetAdminMenuHTML(userID int64) string {
+func (e *IndexController) GetAdminMenuHTML(userID int64) string {
 	columnList, err := new(models.ColumnPower).GetTreeStruct()
 	if err != nil {
 		fmt.Println(err)
@@ -164,7 +170,7 @@ func (e *Admin) GetAdminMenuHTML(userID int64) string {
 }
 
 //注册自定义脚本
-func (e *Admin) appendCustomScripts() {
+func (e *IndexController) appendCustomScripts() {
 	e.Data["customScripts"] = []string{
 		"/static/js/hplus/plugins/metisMenu/jquery.metisMenu.js",
 		"/static/js/hplus/plugins/slimscroll/jquery.slimscroll.min.js",

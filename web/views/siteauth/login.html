@@ -98,8 +98,8 @@ FLogin.prototype.Event_BtnSubmit_Onclick = function(){
         cache: false,
         dataType: 'json',
         success: function (data) {
+            layer.close(loading);
             if(data.code!=0){
-                layer.close(loading);
                 swal("错误提示",data.msg);
             }else{
                 window.location.href = obj.InputReferer.val();

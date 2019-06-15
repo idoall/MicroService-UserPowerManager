@@ -11,12 +11,12 @@ import (
 	"github.com/idoall/MicroService-UserPowerManager/utils/request"
 
 	"github.com/astaxie/beego"
-	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin"
+	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin/index"
 	_ "github.com/idoall/MicroService-UserPowerManager/web/routers"
 )
 
 func main() {
-	beego.AddFuncMap("GetAdminMenuHtml", new(admin.Admin).GetAdminMenuHTML)
+	beego.AddFuncMap("GetAdminMenuHtml", new(index.IndexController).GetAdminMenuHTML)
 	beego.Run()
 }
 

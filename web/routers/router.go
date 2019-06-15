@@ -12,6 +12,8 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/idoall/TokenExchangeCommon/commonutils"
+
 	"github.com/idoall/MicroService-UserPowerManager/utils/inner"
 
 	"github.com/idoall/MicroService-UserPowerManager/utils"
@@ -20,6 +22,7 @@ import (
 
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin"
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin/columns"
+	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin/index"
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin/users"
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin/usersgroup"
 
@@ -30,11 +33,13 @@ import (
 
 func init() {
 
-	// 注册用户模块
+	// 注册后台管理 - 首页模块
+	routerIndexModel := &index.IndexController{}
+	// 注册后台管理 - 用户模块
 	routerUserModel := &users.UsersController{}
-	// 注册栏目模块
+	// 注册后台管理 - 栏目模块
 	routerColumnsModel := &columns.ColumnsController{}
-	// 注册用户组模块
+	// 注册后台管理 - 用户组模块
 	routerUsersGroupModel := &usersgroup.UsersGroupController{}
 	// 注册登录、退出模块
 	routerSiteAuthModel := &siteauth.SiteAuthController{}
@@ -60,7 +65,16 @@ func init() {
 		}),
 		// admin 后台
 		beego.NSNamespace(fmt.Sprintf("/%s", admin.TemplageAdminBaseURL),
+
 			beego.NSBefore(filterAdminUserLoginGateWay), //权限验证
+
+			// 首页
+			beego.NSRouter("/", routerIndexModel),
+			beego.NSNamespace(fmt.Sprintf("/%s", index.TemplageBaseURL),
+				// 首页，默认调用 Get 方法
+				beego.NSRouter("/", routerIndexModel),
+			),
+
 			// 用户管理
 			beego.NSNamespace(fmt.Sprintf("/%s", users.TemplageBaseURL),
 				// 首页，默认调用 Get 方法
@@ -129,7 +143,7 @@ func init() {
 			// 首页，登录
 			beego.NSRouter("/", routerSiteAuthModel, "*:Login"),
 			// 退出登录
-			beego.NSRouter("/loginout", routerSiteAuthModel, "*:LoginOut"),
+			beego.NSRouter("/logout", routerSiteAuthModel, "*:Logout"),
 			// 检测用懚是否可以登录
 			beego.NSRouter("/checklogin", routerSiteAuthModel, "*:CheckLogin"),
 		),
@@ -141,7 +155,7 @@ func init() {
 func filterAdminUserLoginGateWay(ctx *context.Context) {
 
 	// 获取 cookie 中的 token
-	tokenString := ctx.Input.Cookie("token")
+	tokenString := ctx.Input.Cookie("mshk_token")
 	if tokenString == "" {
 		// 转到登录
 		ctx.Redirect(302, fmt.Sprintf("/%s%s?Referer=", admin.AdminBaseRoterVersion, utils.TConfig.String("WebSite::URL_Login"))+url.QueryEscape(ctx.Request.RequestURI))
@@ -152,21 +166,25 @@ func filterAdminUserLoginGateWay(ctx *context.Context) {
 	params := url.Values{}
 	params.Set("Token", tokenString)
 
-	// 发送请求的路径
-	path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::ServiceURL_User_ValidToken"))
-
-	// 临时 Json解析类
+	// 临时 Json 解析类
 	responseJSON := struct {
-		TokenString string `json:"tokenstring"`
+		Vaild       int    `json:"vaild"`       // 是否验证通过
+		UserID      string `json:"userid"`      //用户ID
+		UserName    string `json:"username"`    //用户登录名
+		TokenString string `json:"tokenstring"` //返回的 Token
 	}{}
 	// 发送 http 请求
-	if err := request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJSON, false, true, false); err != nil {
+	if err := request.Request.WebPOSTSendPayload("ServiceURL_User_ValidToken", bytes.NewBufferString(params.Encode()), &responseJSON); err != nil {
 		inner.Mlogger.Error(err)
 		// 转到登录
 		ctx.Redirect(302, fmt.Sprintf("/%s%s?Referer=", admin.AdminBaseRoterVersion, utils.TConfig.String("WebSite::URL_Login"))+url.QueryEscape(ctx.Request.RequestURI))
 		return
 	} else {
+		if commonutils.StringContains(utils.RunMode, "dev") {
+			inner.Mlogger.Info(fmt.Sprintf("用户 %s %s Token验证成功", responseJSON.UserName, responseJSON.UserID))
+		}
+
 		// 写入 cookie,10分钟后过期
-		ctx.Output.Cookie("token", responseJSON.TokenString, 60*10)
+		ctx.Output.Cookie("mshk_token", responseJSON.TokenString, 60*10)
 	}
 }

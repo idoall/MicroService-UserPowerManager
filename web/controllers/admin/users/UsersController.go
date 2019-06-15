@@ -6,10 +6,8 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/idoall/MicroService-UserPowerManager/utils/inner"
 	"github.com/idoall/MicroService-UserPowerManager/utils/request"
 
-	"github.com/idoall/MicroService-UserPowerManager/utils"
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin"
 	"github.com/idoall/MicroService-UserPowerManager/web/models"
 )
@@ -65,15 +63,8 @@ func (e *UsersController) GetListJSON() {
 	params.Set("PageSize", fmt.Sprintf("%d", pageSize))
 	params.Set("CurrentPageIndex", fmt.Sprintf("%d", currentPageIndex))
 
-	// 发送请求的路径
-	path := fmt.Sprintf("%s%s?%s",
-		inner.MicroServiceHostProt,
-		utils.TConfig.String("MicroServices::ServiceURL_User_GetList"),
-		params.Encode(),
-	)
-
 	// 发送 http 请求
-	err = request.Request.SendPayload("GET", path, nil, nil, &jsonList, false, false, false)
+	err = request.Request.WebGETSendPayload("ServiceURL_User_GetList", params, &jsonList)
 	if err != nil {
 		jsonList.ErrMessage = err.Error()
 		e.Data["json"] = jsonList
@@ -150,15 +141,12 @@ func (e *UsersController) AddSave() {
 	params.Set("Email", e.GetString("email"))
 	params.Set("Note", e.GetString("note"))
 
-	// 发送请求的路径
-	path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::ServiceURL_User_Add"))
-
 	// 临时 Json解析类
 	responseJSON := struct {
 		NewID int64 `json:"newid"`
 	}{}
 	// 发送 http 请求
-	if err = request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJSON, false, true, false); err != nil {
+	if err = request.Request.WebPOSTSendPayload("ServiceURL_User_Add", bytes.NewBufferString(params.Encode()), &responseJSON); err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
 		e.Data["json"] = result
@@ -192,24 +180,17 @@ func (e *UsersController) Update() {
 	params := url.Values{}
 	params.Set("ID", strconv.FormatInt(userId, 10))
 
-	// 发送请求的路径
-	path := fmt.Sprintf("%s%s?%s",
-		inner.MicroServiceHostProt,
-		utils.TConfig.String("MicroServices::ServiceURL_User_GetUser"),
-		params.Encode(),
-	)
-
 	// 临时 Json解析类
-	var responseJson map[string]interface{}
+	var responseJSON map[string]interface{}
 	// 发送 http 请求
-	if err = request.Request.SendPayload("GET", path, nil, nil, &responseJson, false, true, false); err != nil {
+	if err = request.Request.WebGETSendPayload("ServiceURL_User_GetUser", params, &responseJSON); err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
 		e.Data["json"] = result
 		e.ServeJSON()
 		return
 	} else {
-		e.Data["Model"] = responseJson["Model"]
+		e.Data["Model"] = responseJSON["Model"]
 	}
 
 	//set Data
@@ -233,8 +214,8 @@ func (e *UsersController) UpdateSave() {
 	// 用于 json 返回的数据
 	var result models.Result
 	var err error
-	var userId int64
-	if userId, err = e.GetInt64("userid", 0); err != nil {
+	var userID int64
+	if userID, err = e.GetInt64("userid", 0); err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
 		e.Data["json"] = result
@@ -244,22 +225,19 @@ func (e *UsersController) UpdateSave() {
 
 	// 拼接要发送的url参数
 	params := url.Values{}
-	params.Set("ID", strconv.FormatInt(userId, 10))
+	params.Set("ID", strconv.FormatInt(userID, 10))
 	params.Set("UserName", e.GetString("username"))
 	params.Set("PassWord", e.GetString("password"))
 	params.Set("RealyName", e.GetString("username"))
 	params.Set("Email", e.GetString("email"))
 	params.Set("Note", e.GetString("note"))
 
-	// 发送请求的路径
-	path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::ServiceURL_User_Update"))
-
 	// 临时 Json 解析类
 	responseJSON := struct {
 		Updated int64
 	}{}
 	// 发送 http 请求
-	if err = request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJSON, false, true, false); err != nil {
+	if err = request.Request.WebPOSTSendPayload("ServiceURL_User_Update", bytes.NewBufferString(params.Encode()), &responseJSON); err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
 		e.Data["json"] = result
@@ -295,15 +273,12 @@ func (e *UsersController) Delete() {
 	params := url.Values{}
 	params.Set("IDArray", strconv.FormatInt(userID, 10))
 
-	// 发送请求的路径
-	path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::ServiceURL_User_BatchDelete"))
-
-	// 临时 Json解析类
+	// 临时 Json 解析类
 	responseJSON := struct {
 		Deleted int64
 	}{}
 	// 发送 http 请求
-	if err = request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJSON, false, true, false); err != nil {
+	if err = request.Request.WebPOSTSendPayload("ServiceURL_User_BatchDelete", bytes.NewBufferString(params.Encode()), &responseJSON); err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
 		e.Data["json"] = result
@@ -333,17 +308,13 @@ func (e *UsersController) BatchDelete() {
 	// 拼接要发送的url参数
 	params := url.Values{}
 	params.Set("IDArray", userIds)
-	fmt.Println(params.Encode())
 
-	// 发送请求的路径
-	path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::ServiceURL_User_BatchDelete"))
-
-	// 临时 Json解析类
-	responseJson := struct {
+	// 临时 JSON 解析类
+	responseJSON := struct {
 		Deleted int64
 	}{}
 	// 发送 http 请求
-	if err = request.Request.SendPayload("POST", path, nil, bytes.NewBufferString(params.Encode()), &responseJson, false, true, false); err != nil {
+	if err = request.Request.WebPOSTSendPayload("POST", bytes.NewBufferString(params.Encode()), &responseJSON); err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
 		e.Data["json"] = result

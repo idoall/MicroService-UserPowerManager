@@ -45,7 +45,7 @@ func (e *Users) Add(ctx context.Context, req *api.Request, rsp *api.Response) er
 
 	// debug
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [ApiUsers][Add] request", namespaceID)
+		inner.Mlogger.Infof("Received %s API [Users][Add] request", namespaceID)
 	}
 
 	// 获取请求参数 - 开始
@@ -142,7 +142,7 @@ func (e *Users) GetList(ctx context.Context, req *api.Request, rsp *api.Response
 	namespaceID := inner.NAMESPACE_MICROSERVICE_APIUSERS
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [ApiUsers][GetList] request", namespaceID)
+		inner.Mlogger.Infof("Received %s API [Users][GetList] request", namespaceID)
 	}
 
 	// 获取请求参数 - 开始
@@ -221,7 +221,7 @@ func (e *Users) GetUser(ctx context.Context, req *api.Request, rsp *api.Response
 	namespaceID := inner.NAMESPACE_MICROSERVICE_APIUSERS
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [ApiUsers][GetUser] request", namespaceID)
+		inner.Mlogger.Infof("Received %s API [Users][GetUser] request", namespaceID)
 	}
 
 	// 获取请求参数 - 开始
@@ -282,7 +282,7 @@ func (e *Users) Update(ctx context.Context, req *api.Request, rsp *api.Response)
 	namespaceID := inner.NAMESPACE_MICROSERVICE_APIUSERS
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [ApiUsers][Update] request", namespaceID)
+		inner.Mlogger.Infof("Received %s API [Users][Update] request", namespaceID)
 	}
 
 	// 获取请求参数 - 开始
@@ -399,7 +399,7 @@ func (e *Users) BatchDelete(ctx context.Context, req *api.Request, rsp *api.Resp
 	namespaceID := inner.NAMESPACE_MICROSERVICE_APIUSERS
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [ApiUsers][BatchDelete] request", namespaceID)
+		inner.Mlogger.Infof("Received %s API [Users][BatchDelete] request", namespaceID)
 	}
 
 	// 获取请求参数 - 开始
@@ -458,7 +458,7 @@ func (e *Users) UserLogin(ctx context.Context, req *api.Request, rsp *api.Respon
 	namespaceID := inner.NAMESPACE_MICROSERVICE_APIUSERS
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [ApiUsers][UserLogin] request", namespaceID)
+		inner.Mlogger.Infof("Received %s API [Users][UserLogin] request", namespaceID)
 	}
 
 	// 获取请求参数 -------------------- 开始
@@ -531,10 +531,15 @@ func (e *Users) UserLogin(ctx context.Context, req *api.Request, rsp *api.Respon
 
 	// 写入 JWT
 	timeDuration := time.Duration(time.Minute * 10) //10分钟后过期
+
+	// 要写入 JWT 的加密参数
 	mapClaims := jwt.MapClaims{
 		"UserId":         strconv.FormatInt(response.Model.ID, 10),
+		"UserName":       response.Model.UserName,
 		"ExpirationDate": time.Now().Add(timeDuration).Format("2006-01-02 15:04:05"),
 	}
+
+	//如果加密失败，则返回错误
 	if tokenString, err = encrypt.JWTEncrypt(mapClaims); err != nil {
 		return errors.InternalServerError(namespaceID, "token.SignedString Error:%s", err.Error())
 	} else {
@@ -563,10 +568,12 @@ func (e *Users) UserLogin(ctx context.Context, req *api.Request, rsp *api.Respon
 	return nil
 }
 
-// 验证 Token
+// ValidToken 验证 Token
 func (e *Users) ValidToken(ctx context.Context, req *api.Request, rsp *api.Response) error {
 
 	var err error
+
+	// 注册原因：感觉验证Token就一个方法，写入jaeger没意义也不好看
 	// 写入一个 jaeger span
 	// ctx, span := jaeger.StartSpan(ctx, "Api_User_ValidToken_Begin")
 	// if span != nil {
@@ -576,7 +583,7 @@ func (e *Users) ValidToken(ctx context.Context, req *api.Request, rsp *api.Respo
 	namespaceID := inner.NAMESPACE_MICROSERVICE_APIUSERS
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s API [ApiUsers][ValidToken] request", namespaceID)
+		inner.Mlogger.Infof("Received %s API [Users][ValidToken] request", namespaceID)
 	}
 
 	// 获取请求参数 -------------------- 开始
@@ -587,6 +594,8 @@ func (e *Users) ValidToken(ctx context.Context, req *api.Request, rsp *api.Respo
 	} else {
 		tokenString = req.Post["Token"].Values[0]
 	}
+
+	//获取是否要更新新的过期时间 1或0
 	if req.Post["UpdateExpirationDate"] != nil && req.Post["UpdateExpirationDate"].Values[0] == "1" {
 		updateExpirationDate = true
 	}
@@ -594,11 +603,19 @@ func (e *Users) ValidToken(ctx context.Context, req *api.Request, rsp *api.Respo
 
 	// 解析 Token
 	var expirationDate time.Time
+
+	// 解析 JWT 的 struct
 	var mapClaims jwt.MapClaims
+
+	// 如果解析失败，返回错误，可能编码被改变
 	if mapClaims, err = encrypt.JWTDecrypt(tokenString); err != nil {
 		return errors.InternalServerError(namespaceID, fmt.Sprintf("JWTDecrypt Error:%s", err.Error()))
 	}
+
+	// 打印解析后的值
 	fmt.Println("mapClaims", mapClaims)
+
+	// 如果日期字段解析错误，也返回
 	if expirationDate, err = time.ParseInLocation("2006-01-02 15:04:05", mapClaims["ExpirationDate"].(string), time.Local); err != nil {
 		return errors.InternalServerError(namespaceID, fmt.Sprintf("ExpirationDate ParseInLocation Error:%s", err.Error()))
 	}
@@ -606,14 +623,14 @@ func (e *Users) ValidToken(ctx context.Context, req *api.Request, rsp *api.Respo
 	// 输出的 json
 	responseJSON := struct {
 		Vaild       int    `json:"vaild"`       // 是否验证通过
-		UserID      int64  `json:"userid"`      //用户ID
+		UserID      string `json:"userid"`      //用户ID
+		UserName    string `json:"username"`    //用户登录名
 		TokenString string `json:"tokenstring"` //返回的 Token
 	}{}
 
 	// 判断 token 是否过期
 	if expirationDate.Before(time.Now()) {
 		responseJSON.TokenString = "Token已过期"
-		responseJSON.UserID = mapClaims["UserId"].(int64)
 		responseJSON.Vaild = 0
 		b, _ := commonutils.JSONEncode(responseJSON)
 		rsp.StatusCode = 200
@@ -621,7 +638,8 @@ func (e *Users) ValidToken(ctx context.Context, req *api.Request, rsp *api.Respo
 	} else {
 		//如果没过期，重新返回原token
 		responseJSON.TokenString = tokenString
-		responseJSON.UserID = mapClaims["UserId"].(int64)
+		responseJSON.UserID = mapClaims["UserId"].(string)
+		responseJSON.UserName = mapClaims["UserName"].(string)
 		responseJSON.Vaild = 1
 		b, _ := commonutils.JSONEncode(responseJSON)
 		rsp.StatusCode = 200
@@ -630,9 +648,10 @@ func (e *Users) ValidToken(ctx context.Context, req *api.Request, rsp *api.Respo
 
 	// 是否要更新Token的过期时间
 	if updateExpirationDate {
-		timeDuration := time.Duration(time.Minute * 10) //10分钟后过期
+		timeDuration := time.Duration(time.Minute * 10) //重新设置10分钟后过期
 		mapClaims := jwt.MapClaims{
 			"UserId":         mapClaims["UserId"].(string),
+			"UserName":       mapClaims["UserName"].(string),
 			"ExpirationDate": time.Now().Add(timeDuration),
 		}
 		if tokenString, err = encrypt.JWTEncrypt(mapClaims); err != nil {

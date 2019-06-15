@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 
+	"github.com/idoall/MicroService-UserPowerManager/utils"
 	"github.com/idoall/MicroService-UserPowerManager/utils/inner"
 	"github.com/idoall/TokenExchangeCommon/commonutils"
 )
@@ -34,6 +36,23 @@ func New(name string, httpRequester *http.Client) *Requester {
 // IsValidMethod returns whether the supplied method is supported
 func IsValidMethod(method string) bool {
 	return commonutils.StringDataCompareUpper(supportedMethods, method)
+}
+
+// WebPOSTSendPayload 封闭统一请求微服务的 POST 方法
+func (r *Requester) WebPOSTSendPayload(configParam string, body io.Reader, result interface{}) error {
+	path := fmt.Sprintf("%s%s", inner.MicroServiceHostProt, utils.TConfig.String("MicroServices::"+configParam))
+	return r.SendPayload("POST", path, nil, body, result, false, true, false)
+}
+
+// WebGETSendPayload 封闭统一请求微服务的 GET 方法
+func (r *Requester) WebGETSendPayload(configParam string, params url.Values, result interface{}) error {
+	// 发送请求的路径
+	path := fmt.Sprintf("%s%s?%s",
+		inner.MicroServiceHostProt,
+		utils.TConfig.String("MicroServices::"+configParam),
+		params.Encode(),
+	)
+	return r.SendPayload("GET", path, nil, nil, result, false, true, false)
 }
 
 // Set header

@@ -50,8 +50,8 @@ func (e *SiteAuthController) Login() {
 	e.TplName = fmt.Sprintf("%s/login.html", TemplageBaseURL)
 }
 
-// LoginOut func
-func (e *SiteAuthController) LoginOut() {
+// Logout 退出登录
+func (e *SiteAuthController) Logout() {
 
 	e.Ctx.SetCookie("token", "", 0)
 	e.Ctx.Redirect(302, fmt.Sprintf("/%s%s", admin.AdminBaseRoterVersion, utils.TConfig.String("WebSite::URL_Login")))
@@ -113,7 +113,7 @@ func (e *SiteAuthController) CheckLogin() {
 		return
 	} else {
 		// 写入 cookie,10分钟后过期
-		e.Ctx.Output.Cookie("token", responseJson.TokenString, 60*10)
+		e.Ctx.Output.Cookie("mshk_token", responseJson.TokenString, 60*10)
 		result.Code = 0
 		result.Msg = "登录成功"
 		e.Data["json"] = result
