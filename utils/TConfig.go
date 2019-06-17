@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 
 	"github.com/astaxie/beego/config"
-	"github.com/idoall/TokenExchangeCommon/commonutils"
 	"github.com/idoall/MicroService-UserPowerManager/utils/inner"
+	"github.com/idoall/TokenExchangeCommon/commonutils"
 )
 
 var (
@@ -23,6 +23,9 @@ var (
 	Verbose bool
 	// RunMode   dev | prod
 	RunMode string
+
+	// AdminVerifyLogin 是否开始管理员验证，主要后台用于调试用
+	AdminVerifyLogin bool
 )
 
 func init() {
@@ -58,5 +61,9 @@ func init() {
 		inner.MicroServiceHostProt = os.Getenv("MICROSERVICE_HOSTPORT")
 	} else {
 		inner.MicroServiceHostProt = "http://localhost:8080"
+	}
+
+	if AdminVerifyLogin, err = TConfig.Bool("WebSite::AdminVerifyLogin"); err != nil {
+		panic("Conf 读取不到 AdminVerifyLogin")
 	}
 }

@@ -1,8 +1,15 @@
 package admin
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
+	"net/url"
+	"strconv"
 
+	"github.com/idoall/MicroService-UserPowerManager/utils"
+	"github.com/idoall/MicroService-UserPowerManager/utils/inner"
+	"github.com/idoall/MicroService-UserPowerManager/utils/request"
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers"
 	"github.com/idoall/TokenExchangeCommon/commonutils"
 )
@@ -68,17 +75,71 @@ func (e *AdminBaseController) AppendCustomScripts(list []string) {
 
 // GetCurrentUser 返回用户ID
 func (e *AdminBaseController) GetCurrentUser() (int64, error) {
-	// var user *models.User
+	tokenString := e.Ctx.Input.Cookie("mshk_token")
+	if tokenString == "" {
+		return int64(0), errors.New("mshk_token is nil")
+	}
 
-	// userIDSession := e.GetSession(internal.SESSIONKEYUSERID)
-	// if userIDSession == nil {
-	// 	if internal.AdminVerifyLogin() {
-	// 		return user, errors.New("用户不存在")
-	// 	} else {
-	// 		return user, nil
-	// 	}
-	// }
+	// 拼接要发送的url参数
+	params := url.Values{}
+	params.Set("Token", tokenString)
 
-	// return new(models.User).GetOne(userIDSession.(int64))
-	return int64(0), nil
+	// 临时 Json 解析类
+	responseJSON := struct {
+		Vaild       int    `json:"vaild"`       // 是否验证通过
+		UserID      string `json:"userid"`      //用户ID
+		UserName    string `json:"username"`    //用户登录名
+		TokenString string `json:"tokenstring"` //返回的 Token
+	}{}
+	// 发送 http 请求
+	if err := request.Request.WebPOSTSendPayload("ServiceURL_User_ValidToken", bytes.NewBufferString(params.Encode()), &responseJSON); err != nil {
+		inner.Mlogger.Error(err)
+		// 转到登录
+		return int64(0), err
+	}
+
+	return strconv.ParseInt(responseJSON.UserID, 10, 64)
+}
+
+// HasPermissions 是否具有权限
+func (e *AdminBaseController) HasPermissions(userID, powerID int64) bool {
+	var err error
+	//如果没有打开验证，直接通过
+	if !utils.AdminVerifyLogin {
+		return true
+	}
+	var power bool
+
+	// 拼接要发送的url参数
+	params := url.Values{}
+	params.Set("Name", fmt.Sprintf("%d", userID))
+
+	var responseRolsJSON []string
+
+	// 发送 http 请求
+	if err = request.Request.WebPOSTSendPayload("ServiceURL_Role_GetRolesForUser", bytes.NewBufferString(params.Encode()), responseRolsJSON); err != nil {
+		inner.Mlogger.Error("HasPermissions ServiceURL_Role_GetRolesForUser Error:" + err.Error())
+		return false
+	}
+
+	powerIDString := fmt.Sprintf("%d", powerID)
+	for _, v := range responseRolsJSON {
+
+		params = url.Values{}
+		params.Set("User", v)
+
+		var responsePermissionsJSON []map[string][]string
+
+		if err = request.Request.WebGETSendPayload("ServiceURL_Role_GetPermissionsForUser", params, &responseJSON); err != nil {
+			inner.Mlogger.Error("HasPermissions ServiceURL_Role_GetPermissionsForUser Error:" + err.Error())
+			return false
+		}
+
+		for _, ov := responsePermissionsJSON{
+			if ov["Two"][1] == powerIDString{
+				return true
+			}
+		}
+	}
+	return power
 }

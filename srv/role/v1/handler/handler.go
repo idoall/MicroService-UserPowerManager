@@ -23,10 +23,10 @@ func (e *SrvRole) GetPermissionsForUser(ctx context.Context, req *proto.ForUserR
 		defer span.Finish()
 	}
 
-	namespace_ID := inner.NAMESPACE_MICROSERVICE_SRVROLE
+	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVROLE
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s Service [ROLE][GetPermissionsForUser] request", namespace_ID)
+		inner.Mlogger.Infof("Received %s Service [ROLE][GetPermissionsForUser] request", namespaceID)
 	}
 
 	//取出用户组的所有权限
@@ -55,16 +55,16 @@ func (e *SrvRole) DeletePermissionsForUser(ctx context.Context, req *proto.ForUs
 		defer span.Finish()
 	}
 
-	namespace_ID := inner.NAMESPACE_MICROSERVICE_SRVROLE
+	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVROLE
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s Service [ROLE][DeletePermissionsForUser] request", namespace_ID)
+		inner.Mlogger.Infof("Received %s Service [ROLE][DeletePermissionsForUser] request", namespaceID)
 	}
 
 	//取出用户组的所有权限
 	delName := "usergroup_" + req.User
 	if !RoleS.DeletePermissionsForUser(delName) {
-		return errors.BadRequest(namespace_ID, "删除失败")
+		return errors.BadRequest(namespaceID, "删除失败")
 	}
 
 	// 写入一个 jaeger span
@@ -84,10 +84,10 @@ func (e *SrvRole) RemoveFilteredPolicy(ctx context.Context, req *proto.RemoveFil
 		defer span.Finish()
 	}
 
-	namespace_ID := inner.NAMESPACE_MICROSERVICE_SRVROLE
+	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVROLE
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s Service [ROLE][RemoveFilteredPolicy] request", namespace_ID)
+		inner.Mlogger.Infof("Received %s Service [ROLE][RemoveFilteredPolicy] request", namespaceID)
 	}
 
 	//移除资源
@@ -112,15 +112,15 @@ func (e *SrvRole) AddPolicy(ctx context.Context, req *proto.AddPolicyRequest, re
 		defer span.Finish()
 	}
 
-	namespace_ID := inner.NAMESPACE_MICROSERVICE_SRVROLE
+	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVROLE
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s Service [ROLE][AddPolicy] request", namespace_ID)
+		inner.Mlogger.Infof("Received %s Service [ROLE][AddPolicy] request", namespaceID)
 	}
 
 	//添加权限
 	if !RoleS.AddPolicy(req.S1, req.S2, req.S3, req.S4) {
-		return errors.BadRequest(namespace_ID, "添加失败")
+		return errors.BadRequest(namespaceID, "添加失败")
 	}
 
 	// 写入一个 jaeger span
@@ -133,21 +133,25 @@ func (e *SrvRole) AddPolicy(ctx context.Context, req *proto.AddPolicyRequest, re
 	return nil
 }
 
+// GetRolesForUser 根据用户获取角色
 func (e *SrvRole) GetRolesForUser(ctx context.Context, req *proto.GetRolesForUserRequest, rep *proto.GetRolesForUserResponse) error {
+	var err error
 	// 写入一个 jaeger span
 	ctx, span := jaeger.StartSpan(ctx, "Srv_Role_GetRolesForUser_Begin")
 	if span != nil {
 		defer span.Finish()
 	}
 
-	namespace_ID := inner.NAMESPACE_MICROSERVICE_SRVROLE
+	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVROLE
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s Service [ROLE][GetRolesForUser] request", namespace_ID)
+		inner.Mlogger.Infof("Received %s Service [ROLE][GetRolesForUser] request", namespaceID)
 	}
 
 	//取出用户组的所有权限
-	rep.Roles = RoleS.GetRolesForUser(req.Name)
+	if rep.Roles, err = RoleS.GetRolesForUser(req.Name); err != nil {
+		return err
+	}
 
 	// 写入一个 jaeger span
 	ctx, span = jaeger.StartSpan(ctx, "Srv_Role_GetRolesForUser_End")

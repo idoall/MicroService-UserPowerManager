@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"fmt"
 
+	"github.com/astaxie/beego"
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin"
+	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin/columns"
 	"github.com/idoall/TokenExchangeCommon/commonutils"
 	"gitlab.mshk.top/TokenExchange/tokenexchangemodels/models"
 )
@@ -25,21 +27,20 @@ func (e *IndexController) Get() {
 
 	fmt.Println("IndexController")
 
-	// var result models.Result
+	var result models.Result
 
-	// user, err := e.GetCurrentUser()
-	// if err != nil {
-	// 	result.Code = -1
-	// 	result.Msg = err.Error()
-	// 	e.Data["json"] = result
-	// 	e.ServeJSON()
-	// 	return
-	// }
+	user, err := e.GetCurrentUser()
+	if err != nil {
+		result.Code = -1
+		result.Msg = err.Error()
+		e.Data["json"] = result
+		e.ServeJSON()
+		return
+	}
 
 	// set Data
-	// versionAdminURL := e.GetVersionAdminBaseURL()
-	// e.Data["User"] = user
-	// e.Data["LoginOutURL"] = beego.AppConfig.String("WebSite::URL_Logout")
+	e.Data["User"] = user
+	e.Data["LoginOutURL"] = beego.AppConfig.String("WebSite::URL_Logout")
 
 	e.SetMortStype()
 	e.SetMortScript()
@@ -49,7 +50,7 @@ func (e *IndexController) Get() {
 
 // GetAdminMenuHtml Html
 func (e *IndexController) GetAdminMenuHTML(userID int64) string {
-	columnList, err := new(models.ColumnPower).GetTreeStruct()
+	columnList, err := new(columns.ColumnsController).GetTreeStruct()
 	if err != nil {
 		fmt.Println(err)
 		return err.Error()
@@ -99,16 +100,16 @@ func (e *IndexController) GetAdminMenuHTML(userID int64) string {
 		if v.Nodes == nil {
 			//判断是否在首页显示
 			if v.IsShowNav {
-				buffer.WriteString(fmt.Sprintf(noNodesTemplate, v.URL, v.Cssicon, v.Name))
+				buffer.WriteString(fmt.Sprintf(noNodesTemplate, v.URL, v.CssIcon, v.Name))
 			}
 		} else {
 			var bufferSecond bytes.Buffer
 			isHaveSvChildNodes := false //是否真的有下一级菜单
 			for _, sv := range v.Nodes {
 				//如果没有二级菜单权限 continue
-				// if !e.HasPermissions(userID, sv.ID) {
-				// 	continue
-				// }
+				if !e.HasPermissions(userID, sv.ID) {
+					continue
+				}
 
 				//如果有二级菜单，并且二级菜单是有显示的，在一级菜单上显示 左侧箭头
 				if sv.IsShowNav {
@@ -126,9 +127,9 @@ func (e *IndexController) GetAdminMenuHTML(userID int64) string {
 					isHaveTvChildNodes := false //是否真的有下一级菜单
 					for _, tv := range sv.Nodes {
 						//如果没有三级菜单权限 continue
-						// if !e.HasPermissions(userID, tv.ID) {
-						// 	continue
-						// }
+						if !e.HasPermissions(userID, tv.ID) {
+							continue
+						}
 						if tv.IsShowNav {
 
 							isHaveTvChildNodes = true

@@ -326,7 +326,7 @@ func (e *ColumnsController) getApiServiceColumnRow() ([]*ColumnRow, error) {
 
 // GetTreeHtmlSelect getTreeHtmlSelect
 func (e *ColumnsController) getTreeHtmlSelect() ([]*models.HtmlSelect, error) {
-	list, err := e.getTreeStruct()
+	list, err := e.GetTreeStruct()
 	if err != nil {
 		return nil, err
 	}
@@ -366,8 +366,8 @@ func (e *ColumnsController) generateRecursiveHTMLSelect(columnPowerHTMLSelect []
 
 //-------------Tree Struct
 
-// getTreeStruct TreeList 获取原始组装好的 Struct 节点
-func (e *ColumnsController) getTreeStruct() ([]*ColumnRow, error) {
+// GetTreeStruct TreeList 获取原始组装好的 Struct 节点
+func (e *ColumnsController) GetTreeStruct() ([]*ColumnRow, error) {
 
 	var err error
 	var apiColumns []*ColumnRow
