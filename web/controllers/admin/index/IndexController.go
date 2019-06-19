@@ -25,11 +25,9 @@ type IndexController struct {
 // Get 获取首页信息
 func (e *IndexController) Get() {
 
-	fmt.Println("IndexController")
-
 	var result models.Result
 
-	user, err := e.GetCurrentUser()
+	userID, userName, err := e.GetCurrentUser()
 	if err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
@@ -39,7 +37,8 @@ func (e *IndexController) Get() {
 	}
 
 	// set Data
-	e.Data["User"] = user
+	e.Data["UserName"] = userName
+	e.Data["UserID"] = userID
 	e.Data["LoginOutURL"] = beego.AppConfig.String("WebSite::URL_Logout")
 
 	e.SetMortStype()
@@ -107,9 +106,9 @@ func (e *IndexController) GetAdminMenuHTML(userID int64) string {
 			isHaveSvChildNodes := false //是否真的有下一级菜单
 			for _, sv := range v.Nodes {
 				//如果没有二级菜单权限 continue
-				if !e.HasPermissions(userID, sv.ID) {
-					continue
-				}
+				// if !e.HasPermissions(userID, sv.ID) {
+				// 	continue
+				// }
 
 				//如果有二级菜单，并且二级菜单是有显示的，在一级菜单上显示 左侧箭头
 				if sv.IsShowNav {
@@ -152,10 +151,10 @@ func (e *IndexController) GetAdminMenuHTML(userID int64) string {
 
 			//是否有下级菜单，如果有显示最右侧的箭头
 			if isHaveSvChildNodes {
-				liStr := fmt.Sprintf(NodesTemplate, v.URL, v.Cssicon, v.Name, bufferSecond.String())
+				liStr := fmt.Sprintf(NodesTemplate, v.URL, v.CssIcon, v.Name, bufferSecond.String())
 				buffer.WriteString(liStr)
 			} else {
-				buffer.WriteString(fmt.Sprintf(noNodesTemplate, v.URL, v.Cssicon, v.Name))
+				buffer.WriteString(fmt.Sprintf(noNodesTemplate, v.URL, v.CssIcon, v.Name))
 			}
 		}
 	}

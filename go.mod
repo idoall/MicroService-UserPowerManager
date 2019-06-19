@@ -9,14 +9,13 @@ require (
 	github.com/SermoDigital/jose v0.9.2-0.20161205224733-f6df55f235c2 // indirect
 	github.com/astaxie/beego v1.11.1
 	github.com/bwmarrin/snowflake v0.0.0-20180412010544-68117e6bbede
+	github.com/casbin/beego-orm-adapter v0.0.0-20180421160615-ba104911ae5b
 	github.com/casbin/casbin v1.7.0
-	github.com/casbin/xorm-adapter v0.0.0-20190523030917-9b17d80119cb
 	github.com/census-instrumentation/opencensus-proto v0.1.0 // indirect
 	github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fastly/go-utils v0.0.0-20180712184237-d95a45783239 // indirect
 	github.com/go-sql-driver/mysql v1.4.1
-	github.com/go-xorm/xorm v0.7.1 // indirect
 	github.com/golang/protobuf v1.3.1
 	github.com/idoall/TokenExchangeCommon v0.0.0-20190406161816-b77f54f3a4b1
 	github.com/jehiah/go-strftime v0.0.0-20171201141054-1d33003b3869 // indirect

@@ -45,6 +45,7 @@ message GetListRequest{
 	int64 PageSize = 1;
 	int64 CurrentPageIndex = 2;
 	string OrderBy = 3;
+	map<string, string> Where = 4;
 }
 
 message GetListResponse{

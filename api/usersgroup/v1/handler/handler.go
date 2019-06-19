@@ -122,6 +122,7 @@ func (e *UsersGroup) GetList(ctx context.Context, req *api.Request, rsp *api.Res
 	// 获取请求参数 - 开始
 	var pageSize, currentPageIndex int64
 	var orderBy string
+	var where map[string]string
 	if req.Get["PageSize"] == nil || req.Get["PageSize"].Values[0] == "" {
 		return errors.InternalServerError(namespaceID, "PageSize 不能为空")
 	} else if pageSize, err = commonutils.Int64FromString(req.Get["PageSize"].Values[0]); err != nil {
@@ -132,12 +133,23 @@ func (e *UsersGroup) GetList(ctx context.Context, req *api.Request, rsp *api.Res
 		return errors.InternalServerError(namespaceID, "CurrentPageIndex 不能为空")
 	} else if currentPageIndex, err = commonutils.Int64FromString(req.Get["CurrentPageIndex"].Values[0]); err != nil {
 		return errors.InternalServerError(namespaceID, "CurrentPageIndex Format Error:%s", err.Error())
-
 	}
 
 	if req.Get["OrderBy"] != nil {
 		orderBy = req.Get["OrderBy"].Values[0]
 	}
+
+	// Where 参数格式 "x_hestia_source":"23864","x_object_type":"item"
+	if req.Get["Where"] != nil && req.Get["Where"].Values[0] != "" {
+		whereArray := strings.Split(req.Get["Where"].Values[0], ",")
+		for _, v := range whereArray {
+			if v != "" {
+				whereItem := strings.Split(v, ":")
+				where[whereItem[0]] = whereItem[1]
+			}
+		}
+	}
+
 	// 获取请求参数 - 结束
 
 	// return json
@@ -151,6 +163,7 @@ func (e *UsersGroup) GetList(ctx context.Context, req *api.Request, rsp *api.Res
 		CurrentPageIndex: currentPageIndex,
 		PageSize:         pageSize,
 		OrderBy:          orderBy,
+		Where:            where,
 	})
 	if err != nil {
 		if !commonutils.StringContains(err.Error(), "no row found") {

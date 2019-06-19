@@ -31,21 +31,21 @@ func (e *HistoryUserLogin) Add(ctx context.Context, req *proto.AddRequest, rep *
 		return errors.BadRequest(namespace_id, "User.ID 不能为0")
 	}
 
-	if req.GeoRemoteAddr == "" {
-		return errors.BadRequest(namespace_id, "GeoRemoteAddr 不能为空")
-	}
+	// if req.GeoRemoteAddr == "" {
+	// 	return errors.BadRequest(namespace_id, "GeoRemoteAddr 不能为空")
+	// }
 
-	if req.GeoCountry == "" {
-		return errors.BadRequest(namespace_id, "GeoCountry 不能为空")
-	}
+	// if req.GeoCountry == "" {
+	// 	return errors.BadRequest(namespace_id, "GeoCountry 不能为空")
+	// }
 
-	if req.GeoCity == "" {
-		return errors.BadRequest(namespace_id, "GeoCity 不能为空")
-	}
+	// if req.GeoCity == "" {
+	// 	return errors.BadRequest(namespace_id, "GeoCity 不能为空")
+	// }
 
-	if req.DeviceDetector == "" {
-		return errors.BadRequest(namespace_id, "DeviceDetector 不能为空")
-	}
+	// if req.DeviceDetector == "" {
+	// 	return errors.BadRequest(namespace_id, "DeviceDetector 不能为空")
+	// }
 
 	// 创建数据库记录
 	model := new(models.HistoryUserLogin)

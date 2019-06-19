@@ -93,6 +93,16 @@ func init() {
 				beego.NSRouter("/delete", routerUserModel, "*:Delete"),
 				// 批量删除用户
 				beego.NSRouter("/batchdelete", routerUserModel, "*:BatchDelete"),
+				// 批量删除用户
+				beego.NSRouter("/user2usersgroup", routerUserModel, "*:User2UserGroup"),
+				// 批量删除用户
+				beego.NSRouter("/user2usersgroupsave", routerUserModel, "*:User2UserGroupSave"),
+				// 批量删除用户
+				beego.NSRouter("/GetUserGroupsByUser", routerUserModel, "*:GetUserGroupsByUser"),
+
+				// beego.Router(user.BaseURL+"/User2UserGroup", routerUserModel, "*:User2UserGroup"),
+				// beego.Router(user.BaseURL+"/User2UserGroupSave", routerUserModel, "*:User2UserGroupSave"),
+				// beego.Router(user.BaseURL+"/GetUserGroupsByUser", routerUserModel, "*:GetUserGroupsByUser"),
 			),
 			// 栏目管理
 			beego.NSNamespace(fmt.Sprintf("/%s", columns.TemplageBaseURL),

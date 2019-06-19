@@ -94,6 +94,11 @@ func (e *UsersGroup) GetList(ctx context.Context, req *proto.GetListRequest, rep
 	}
 
 	cond := orm.NewCondition()
+
+	for k, v := range req.Where {
+		cond = cond.And(k, v)
+	}
+
 	if list, totalcount, err := new(models.UsersGroup).GetAll(cond, int(req.PageSize), int(req.CurrentPageIndex), orderBy); err != nil {
 		return errors.BadRequest(namespaceID, "Model.UsersGroup GetAll Error:%s", err.Error())
 	} else {

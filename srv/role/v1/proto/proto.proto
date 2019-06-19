@@ -14,6 +14,12 @@ service SrvRole {
 	rpc AddPolicy(AddPolicyRequest) returns (Empty) {}
 	// 批量删除用户组
 	rpc GetRolesForUser(GetRolesForUserRequest) returns (GetRolesForUserResponse) {}
+
+	// 根据用户删除角色
+	rpc DeleteRolesForUser(ForUserRequest) returns (Empty) {}
+
+	// 添加用户和用户角色（组）关系
+	rpc AddGroupingPolicy(AddGroupingPolicyRequest) returns (Empty) {}
 }
 
 message Empty {
@@ -54,4 +60,9 @@ message GetRolesForUserRequest{
 
 message GetRolesForUserResponse{
 	repeated string Roles = 1;
+}
+
+message AddGroupingPolicyRequest{
+	string User =1;
+	repeated string UserGroup = 2;
 }

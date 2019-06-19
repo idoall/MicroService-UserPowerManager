@@ -133,6 +133,36 @@ func (e *SrvRole) AddPolicy(ctx context.Context, req *proto.AddPolicyRequest, re
 	return nil
 }
 
+// AddPolicy 添加用户和角色（组）
+func (e *SrvRole) AddGroupingPolicy(ctx context.Context, req *proto.AddGroupingPolicyRequest, rep *proto.Empty) error {
+	// 写入一个 jaeger span
+	ctx, span := jaeger.StartSpan(ctx, "Srv_Role_AddGroupingPolicy_Begin")
+	if span != nil {
+		defer span.Finish()
+	}
+
+	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVROLE
+
+	if utils.RunMode == "dev" {
+		inner.Mlogger.Infof("Received %s Service [ROLE][AddGroupingPolicy] request", namespaceID)
+	}
+
+	//添加
+	for _, v := range req.UserGroup {
+		groupName := "usergroup_" + v
+		RoleS.AddGroupingPolicy(req.User, groupName)
+	}
+
+	// 写入一个 jaeger span
+	ctx, span = jaeger.StartSpan(ctx, "Srv_Role_AddGroupingPolicy_End")
+	if span != nil {
+		defer span.Finish()
+		// span.SetTag("NewID", rep.NewID)
+	}
+
+	return nil
+}
+
 // GetRolesForUser 根据用户获取角色
 func (e *SrvRole) GetRolesForUser(ctx context.Context, req *proto.GetRolesForUserRequest, rep *proto.GetRolesForUserResponse) error {
 	var err error
@@ -155,6 +185,34 @@ func (e *SrvRole) GetRolesForUser(ctx context.Context, req *proto.GetRolesForUse
 
 	// 写入一个 jaeger span
 	ctx, span = jaeger.StartSpan(ctx, "Srv_Role_GetRolesForUser_End")
+	if span != nil {
+		defer span.Finish()
+		// span.SetTag("NewID", rep.NewID)
+	}
+
+	return nil
+}
+
+// DeleteRolesForUser 根据用户删除角色
+func (e *SrvRole) DeleteRolesForUser(ctx context.Context, req *proto.ForUserRequest, rep *proto.Empty) error {
+
+	// 写入一个 jaeger span
+	ctx, span := jaeger.StartSpan(ctx, "Srv_Role_DeleteRolesForUser_Begin")
+	if span != nil {
+		defer span.Finish()
+	}
+
+	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVROLE
+
+	if utils.RunMode == "dev" {
+		inner.Mlogger.Infof("Received %s Service [ROLE][DeleteRolesForUser] request", namespaceID)
+	}
+
+	//取出用户组的所有权限
+	RoleS.DeleteRolesForUser(req.User)
+
+	// 写入一个 jaeger span
+	ctx, span = jaeger.StartSpan(ctx, "Srv_Role_DeleteRolesForUser_End")
 	if span != nil {
 		defer span.Finish()
 		// span.SetTag("NewID", rep.NewID)

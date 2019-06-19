@@ -55,11 +55,41 @@
 
 ## go-micro 环境安装
 
-代码生成需要安装 Protobuf
+
+### 编译安装 Protoc 3.8.0
+
+```
+$ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.8.0/protobuf-all-3.8.0.zip
+$ unzip protobuf-all-3.8.0.zip
+$ cd protobuf-3.8.0
+
+# Mac 编译安装
+$ brew install automake libtool autoconf
+$ ./autogen.sh
+$ ./configure CPPFLAGS=-DGTEST_USE_OWN_TR1_TUPLE=1
+$ make && make install
+
+# 查看版本
+$ protoc --version
+```
+
+### 安装 Go Micro
+
+```
+go get github.com/micro/go-micro
+```
+
+### 安装 Golang Protobuf
 ```
 $ brew install protobuf
 $ go get -u -v github.com/golang/protobuf/{proto,protoc-gen-go}
 $ go get -u -v github.com/micro/protoc-gen-micro
+```
+
+### 安装 Toolkit
+
+```
+go get github.com/micro/micro
 ```
 
 在项目中初始化相关依赖，需要golang 1.12+

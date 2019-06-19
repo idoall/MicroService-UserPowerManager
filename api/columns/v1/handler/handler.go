@@ -18,7 +18,7 @@ import (
 	"github.com/micro/go-micro/errors"
 )
 
-// ApiColumns struct
+// Columns struct
 type Columns struct {
 	Client srvProto.ProtoColumnsService
 }

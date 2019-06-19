@@ -1,16 +1,17 @@
 
 # 测试运行
 
-运行 srvcolumns
+运行 srv columns
 ```
-# run srvcolumns
-$ cd $GOPATH/src/github.com/idoall/MicroService-UserPowerManager/srv/srvcolumns
+# run srv columns
+$ cd $GOPATH/src/github.com/idoall/MicroService-UserPowerManager/srv/columns
 $ go run main.go init.go --registry=mdns
 ```
 
-运行 apicolumns
+运行 api columns
 ```bash
-$ cd $GOPATH/src/github.com/idoall/MicroService-UserPowerManager/api/apicolumns
+# run api columns
+$ cd $GOPATH/src/github.com/idoall/MicroService-UserPowerManager/api/columns
 $ go run main.go init.go --registry=mdns
 ```
 

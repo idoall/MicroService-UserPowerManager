@@ -476,25 +476,25 @@ func (e *Users) UserLogin(ctx context.Context, req *api.Request, rsp *api.Respon
 	}
 
 	if req.Post["DeviceDetector"] == nil || req.Post["DeviceDetector"].Values[0] == "" {
-		return errors.InternalServerError(namespaceID, "DeviceDetector 不能为空")
+		// return errors.InternalServerError(namespaceID, "DeviceDetector 不能为空")
 	} else {
 		deviceDetector = req.Post["DeviceDetector"].Values[0]
 	}
 
 	if req.Post["GeoRemoteAddr"] == nil || req.Post["GeoRemoteAddr"].Values[0] == "" {
-		return errors.InternalServerError(namespaceID, "GeoRemoteAddr 不能为空")
+		// return errors.InternalServerError(namespaceID, "GeoRemoteAddr 不能为空")
 	} else {
 		geoRemoteAddr = req.Post["GeoRemoteAddr"].Values[0]
 	}
 
 	if req.Post["GeoCountry"] == nil || req.Post["GeoCountry"].Values[0] == "" {
-		return errors.InternalServerError(namespaceID, "GeoCountry 不能为空")
+		// return errors.InternalServerError(namespaceID, "GeoCountry 不能为空")
 	} else {
 		geoCountry = req.Post["GeoCountry"].Values[0]
 	}
 
 	if req.Post["GeoCity"] == nil || req.Post["GeoCity"].Values[0] == "" {
-		return errors.InternalServerError(namespaceID, "GeoCity 不能为空")
+		// return errors.InternalServerError(namespaceID, "GeoCity 不能为空")
 	} else {
 		geoCity = req.Post["GeoCity"].Values[0]
 	}

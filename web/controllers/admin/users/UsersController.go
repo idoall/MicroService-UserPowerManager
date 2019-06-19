@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin/usersgroup"
+
 	"github.com/idoall/MicroService-UserPowerManager/utils/request"
 
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin"
@@ -88,6 +90,7 @@ func (e *UsersController) Get() {
 	e.Data["UpdateUrl"] = fmt.Sprintf("%s/%s/update?id=", versionAdminURL, TemplageBaseURL)
 	e.Data["DelUrl"] = fmt.Sprintf("%s/%s/delete?id=", versionAdminURL, TemplageBaseURL)
 	e.Data["BatchDelUrl"] = fmt.Sprintf("%s/%s/batchdelete", versionAdminURL, TemplageBaseURL)
+	e.Data["User2UserGroupURL"] = fmt.Sprintf("%s/%s/user2usersgroup?id=", versionAdminURL, TemplageBaseURL)
 	e.Data["JSONListUrl"] = fmt.Sprintf("%s/%s/GetListJSON", versionAdminURL, TemplageBaseURL)
 
 	e.SetMortStype()
@@ -164,11 +167,11 @@ func (e *UsersController) AddSave() {
 // Update 修改用户
 func (e *UsersController) Update() {
 	var err error
-	var userId int64
+	var userID int64
 	// 用于 json 返回的数据
 	var result models.Result
 
-	if userId, err = e.GetInt64("id", 0); err != nil {
+	if userID, err = e.GetInt64("id", 0); err != nil {
 		result.Code = -1
 		result.Msg = err.Error()
 		e.Data["json"] = result
@@ -178,7 +181,7 @@ func (e *UsersController) Update() {
 
 	// 拼接要发送的url参数
 	params := url.Values{}
-	params.Set("ID", strconv.FormatInt(userId, 10))
+	params.Set("ID", strconv.FormatInt(userID, 10))
 
 	// 临时 Json解析类
 	var responseJSON map[string]interface{}
@@ -321,6 +324,143 @@ func (e *UsersController) BatchDelete() {
 	} else {
 		result.Code = 0
 		e.Data["json"] = result
+	}
+
+	e.ServeJSON()
+}
+
+// User2UserGroup View
+func (e *UsersController) User2UserGroup() {
+
+	var err error
+	var result models.Result
+	userID, _ := e.GetInt64("id", 0)
+
+	// 拼接要发送的url参数
+	params := url.Values{}
+	params.Set("ID", strconv.FormatInt(userID, 10))
+
+	// 临时 Json解析类
+	var responseUserJSON map[string]map[string]interface{}
+	// 发送 http 请求
+	if err = request.Request.WebGETSendPayload("ServiceURL_User_GetUser", params, &responseUserJSON); err != nil {
+		result.Code = -1
+		result.Msg = err.Error()
+		e.Data["json"] = result
+		e.ServeJSON()
+		return
+	}
+
+	//set Data
+	versionAdminURL := e.GetVersionAdminBaseURL()
+	e.Data["Model"] = responseUserJSON["Model"]
+	e.Data["title"] = fmt.Sprintf("%s[%s] -  用户组配置", baseTitle, responseUserJSON["Model"]["UserName"])
+	e.Data["URL_UserGroupListJSON"] = fmt.Sprintf("%s/%s/GetListJSON", versionAdminURL, usersgroup.TemplageBaseURL)
+	e.Data["URL_User2UserGroupSave"] = fmt.Sprintf("%s/%s/user2usersgroupsave", versionAdminURL, TemplageBaseURL)
+	e.Data["URL_GetUserGroupsByUser"] = fmt.Sprintf("%s/%s/GetUserGroupsByUser", versionAdminURL, TemplageBaseURL)
+	e.Data["URL_ColumnPowerUrl"] = fmt.Sprintf("%s/%s/ColumnPower?id=", versionAdminURL, usersgroup.TemplageBaseURL)
+
+	//公用设置，样式、脚本、layout
+	e.SetMortStype()
+	e.SetMortScript()
+	e.AppendCustomScripts([]string{
+		//Bootstrap table
+		"/static/js/hplus/plugins/bootstrap-table/bootstrap-table.min.js",
+		// "/static/js/hplus/plugins/bootstrap-table/bootstrap-table-mobile.min.js",
+		"/static/js/hplus/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js",
+		"/static/js/hplus/plugins/layer/layer.min.js",
+	})
+	e.AppendCustomStyles([]string{
+		//Bootstrap table
+		"/static/css/hplus/bootstrap-table/bootstrap-table.min.css",
+	})
+	e.Layout = "admin/layout/layout.html"
+	e.LayoutSections = make(map[string]string)
+	e.LayoutSections["CustomHeader"] = "admin/layout/layout-customsheader.html"
+	e.TplName = fmt.Sprintf("%s/%s/user2group.html", admin.TemplageAdminBaseURL, TemplageBaseURL)
+}
+
+// User2UserGroupSave View
+func (e *UsersController) User2UserGroupSave() {
+	var err error
+	var result models.Result
+	userID, _ := e.GetInt64("id", 0)
+	// 拼接要发送的url参数
+	params := url.Values{}
+	params.Set("ID", strconv.FormatInt(userID, 10))
+
+	// 临时 Json解析类
+	var responseUserJSON map[string]map[string]interface{}
+	// 发送 http 请求
+	if err = request.Request.WebGETSendPayload("ServiceURL_User_GetUser", params, &responseUserJSON); err != nil {
+		result.Code = -1
+		result.Msg = err.Error()
+		e.Data["json"] = result
+		e.ServeJSON()
+		return
+	}
+
+	//先删除用户的权限
+	params = url.Values{}
+	params.Set("User", fmt.Sprintf("%.f", responseUserJSON["Model"]["ID"].(float64)))
+	if err = request.Request.WebPOSTSendPayload("ServiceURL_Role_DeleteRolesForUser", bytes.NewBufferString(params.Encode()), nil); err != nil {
+		result.Code = -1
+		result.Msg = err.Error()
+		e.Data["json"] = result
+		e.ServeJSON()
+		return
+	}
+
+	// 添加用户和角色（组）的关系
+	params = url.Values{}
+	params.Set("User", fmt.Sprintf("%.f", responseUserJSON["Model"]["ID"].(float64)))
+	params.Set("UserGroup", e.GetString("ids"))
+	if err = request.Request.WebPOSTSendPayload("ServiceURL_Role_AddGroupingPolicy", bytes.NewBufferString(params.Encode()), nil); err != nil {
+		result.Code = -1
+		result.Msg = err.Error()
+		e.Data["json"] = result
+		e.ServeJSON()
+		return
+	}
+	result.Code = 0
+	e.Data["json"] = result
+	e.ServeJSON()
+}
+
+// GetUserGroupsByUser View
+func (e *UsersController) GetUserGroupsByUser() {
+	var err error
+	var result models.Result
+	userID, _ := e.GetInt64("id", 0)
+
+	// 拼接要发送的url参数
+	params := url.Values{}
+	params.Set("ID", strconv.FormatInt(userID, 10))
+
+	// 临时 Json解析类
+	var responseUserJSON map[string]map[string]interface{}
+	// 发送 http 请求
+	if err = request.Request.WebGETSendPayload("ServiceURL_User_GetUser", params, &responseUserJSON); err != nil {
+		result.Code = -1
+		result.Msg = err.Error()
+		e.Data["json"] = result
+		e.ServeJSON()
+		return
+	}
+
+	// 获取用户所属用户组
+	params = url.Values{}
+	params.Set("Name", fmt.Sprintf("%.f", responseUserJSON["Model"]["ID"].(float64)))
+
+	var roleArray []string
+	// 发送 http 请求
+	if err = request.Request.WebPOSTSendPayload("ServiceURL_Role_GetRolesForUser", bytes.NewBufferString(params.Encode()), &roleArray); err != nil {
+		result.Code = -1
+		result.Msg = err.Error()
+		e.Data["json"] = result
+	} else {
+		result.Code = 0
+		e.Data["json"] = roleArray
 	}
 
 	e.ServeJSON()

@@ -14,7 +14,7 @@
                             <span class="clear">
                            <span class="block m-t-xs">
                                <strong class="font-bold">{{/*可以放用户名，下面放用户组或其他信息*/}}</strong></span>
-                            <span class="text-muted text-xs block">{{if .User }}{{.User.UserName}}{{else}}开发者帐号{{end}}<b class="caret"></b></span>
+                            <span class="text-muted text-xs block">{{if .UserName }}{{.UserName}}{{else}}开发者帐号{{end}}<b class="caret"></b></span>
                             </span>
                         </a>
                         <ul class="dropdown-menu animated fadeInRight m-t-xs">
@@ -34,12 +34,11 @@
                     <div class="logo-element">H+
                     </div>
                 </li>
-                {{if .User }}
-                    {{ GetAdminMenuHtml .User.ID | str2html}}
+                {{if .UserName }}
+                    {{ GetAdminMenuHtml .UserID | str2html}}
                 {{else}}
                     {{ GetAdminMenuHtml 1 | str2html}}
                 {{end}}
-                
             </ul>
         </div>
     </nav>

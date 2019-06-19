@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"strings"
 
 	"github.com/idoall/TokenExchangeCommon/commonutils"
 
@@ -239,6 +240,62 @@ func (e *Role) AddPolicy(ctx context.Context, req *api.Request, rsp *api.Respons
 	return nil
 }
 
+// AddGroupingPolicy 添加用户和角色（组）的关系
+func (e *Role) AddGroupingPolicy(ctx context.Context, req *api.Request, rsp *api.Response) error {
+
+	var err error
+
+	// 写入一个 jaeger span
+	ctx, span := jaeger.StartSpan(ctx, "Api_Role_AddGroupingPolicy_Begin")
+	if span != nil {
+		defer span.Finish()
+	}
+
+	namespaceID := inner.NAMESPACE_MICROSERVICE_APIROLE
+
+	if utils.RunMode == "dev" {
+		inner.Mlogger.Infof("Received %s API [Role][AddGroupingPolicy] request", namespaceID)
+	}
+
+	// 获取请求参数 - 开始
+	var user string
+	var userGroup []string
+	if req.Post["User"] == nil || req.Post["User"].Values[0] == "" {
+		return errors.InternalServerError(namespaceID, "User 不能为空")
+	} else {
+		user = req.Post["User"].Values[0]
+	}
+	if req.Post["UserGroup"] == nil || req.Post["UserGroup"].Values[0] == "" {
+		return errors.InternalServerError(namespaceID, "UserGroup 不能为空")
+	} else {
+		userGroup = strings.Split(req.Post["UserGroup"].Values[0], ",")
+	}
+
+	// 调用服务端方法
+	srvResponse, err := e.Client.AddGroupingPolicy(ctx, &srvProto.AddGroupingPolicyRequest{User: user, UserGroup: userGroup})
+	if err != nil {
+		return errors.InternalServerError(namespaceID, err.Error())
+	}
+
+	// 输出的 json
+	b, _ := commonutils.JSONEncode(srvResponse)
+	rsp.StatusCode = 200
+	rsp.Body = string(b)
+
+	// debug
+	if utils.RunMode == "dev" {
+		// inner.Mlogger.Info("rsp.Body", rsp.Body)
+	}
+
+	// 写入一个 jaeger span
+	ctx, span = jaeger.StartSpan(ctx, "Api_Role_AddGroupingPolicy_End")
+	if span != nil {
+		defer span.Finish()
+	}
+
+	return nil
+}
+
 // GetRolesForUser 获取角色
 func (e *Role) GetRolesForUser(ctx context.Context, req *api.Request, rsp *api.Response) error {
 
@@ -282,6 +339,56 @@ func (e *Role) GetRolesForUser(ctx context.Context, req *api.Request, rsp *api.R
 
 	// 写入一个 jaeger span
 	ctx, span = jaeger.StartSpan(ctx, "Api_Role_GetRolesForUser_End")
+	if span != nil {
+		defer span.Finish()
+	}
+
+	return nil
+}
+
+// DeleteRolesForUser 根据用户删除角色
+func (e *Role) DeleteRolesForUser(ctx context.Context, req *api.Request, rsp *api.Response) error {
+
+	var err error
+
+	// 写入一个 jaeger span
+	ctx, span := jaeger.StartSpan(ctx, "Api_Role_DeleteRolesForUser_Begin")
+	if span != nil {
+		defer span.Finish()
+	}
+
+	namespaceID := inner.NAMESPACE_MICROSERVICE_APIROLE
+
+	if utils.RunMode == "dev" {
+		inner.Mlogger.Infof("Received %s API [Role][DeleteRolesForUser] request", namespaceID)
+	}
+
+	// 获取请求参数 - 开始
+	var user string
+	if req.Post["User"] == nil || req.Post["User"].Values[0] == "" {
+		return errors.InternalServerError(namespaceID, "User 不能为空")
+	} else {
+		user = req.Post["User"].Values[0]
+	}
+
+	// 调用服务端方法
+	srvResponse, err := e.Client.DeleteRolesForUser(ctx, &srvProto.ForUserRequest{User: user})
+	if err != nil {
+		return errors.InternalServerError(namespaceID, err.Error())
+	}
+
+	// 输出的 json
+	b, _ := commonutils.JSONEncode(srvResponse)
+	rsp.StatusCode = 200
+	rsp.Body = string(b)
+
+	// debug
+	if utils.RunMode == "dev" {
+		// inner.Mlogger.Info("rsp.Body", rsp.Body)
+	}
+
+	// 写入一个 jaeger span
+	ctx, span = jaeger.StartSpan(ctx, "Api_Role_DeleteRolesForUser_End")
 	if span != nil {
 		defer span.Finish()
 	}
