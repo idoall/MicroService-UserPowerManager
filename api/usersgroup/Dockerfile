@@ -1,5 +1,5 @@
 FROM alpine
 ADD conf /conf
-ADD mshk.apiusersgroup /mshk.apiusersgroup
+ADD mshk.usersgroup /mshk.usersgroup
 RUN mkdir -p /logs
-ENTRYPOINT [ "/mshk.apiusersgroup" ]
+ENTRYPOINT [ "/mshk.usersgroup" ]

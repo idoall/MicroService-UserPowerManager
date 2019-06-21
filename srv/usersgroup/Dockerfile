@@ -1,6 +1,6 @@
 FROM idoall/alpine:3.9.3
 ADD conf /conf
-ADD mshk.srvusersgroup /mshk.srvusersgroup
+ADD mshk.usersgroup /mshk.usersgroup
 RUN mkdir -p /logs
 
-ENTRYPOINT [ "/mshk.srvusersgroup" ]
+ENTRYPOINT [ "/mshk.usersgroup" ]

@@ -48,10 +48,74 @@ services:
       - "14250:14250"
       - "9411:9411"
   ##############################
-  # apiusers
+  # api columns
+  ##############################
+  apicolumns:
+    build: ./api/columns
+    command: --registry_address=consul:8500
+    links:
+      - consul
+      - jaeger
+    environment:
+      - JAEGER_AGENTHOSTPORT=${JAEGER_AGENTHOSTPORT}
+    depends_on:
+      - microapi
+      - microweb
+      - srvcolumns
+  ##############################
+  # srv columns
+  ##############################
+  srvcolumns:
+    build: ./srv/columns
+    command: --registry_address=consul:8500
+    environment:
+      - JAEGER_AGENTHOSTPORT=${JAEGER_AGENTHOSTPORT}
+      - DATABASE_SERVER_HOST=${DATABASE_SERVER_HOST}
+      - DATABASE_SERVER_PORT=${DATABASE_SERVER_PORT}
+      - DATABASE_SERVER_DBNAME=${DATABASE_SERVER_DBNAME}
+      - DATABASE_SERVER_USERNAME=${DATABASE_SERVER_USERNAME}
+      - DATABASE_SERVER_PASSWORD=${DATABASE_SERVER_PASSWORD}
+      - DATABASE_SERVER_CHARSET=${DATABASE_SERVER_CHARSET}
+    links:
+      - consul
+      - jaeger
+  ##############################
+  # api role
+  ##############################
+  apirole:
+    build: ./api/role
+    command: --registry_address=consul:8500
+    links:
+      - consul
+      - jaeger
+    environment:
+      - JAEGER_AGENTHOSTPORT=${JAEGER_AGENTHOSTPORT}
+    depends_on:
+      - microapi
+      - microweb
+      - srvrole
+  ##############################
+  # srv role
+  ##############################
+  srvrole:
+    build: ./srv/role
+    command: --registry_address=consul:8500
+    environment:
+      - JAEGER_AGENTHOSTPORT=${JAEGER_AGENTHOSTPORT}
+      - DATABASE_SERVER_HOST=${DATABASE_SERVER_HOST}
+      - DATABASE_SERVER_PORT=${DATABASE_SERVER_PORT}
+      - DATABASE_SERVER_DBNAME=${DATABASE_SERVER_DBNAME}
+      - DATABASE_SERVER_USERNAME=${DATABASE_SERVER_USERNAME}
+      - DATABASE_SERVER_PASSWORD=${DATABASE_SERVER_PASSWORD}
+      - DATABASE_SERVER_CHARSET=${DATABASE_SERVER_CHARSET}
+    links:
+      - consul
+      - jaeger
+  ##############################
+  # api users
   ##############################
   apiusers:
-    build: ./api/apiusers
+    build: ./api/users
     command: --registry_address=consul:8500
     links:
       - consul
@@ -64,10 +128,10 @@ services:
       - srvusers
       - srvhistoryuserlogin
   ##############################
-  # srvusers
+  # srv users
   ##############################
   srvusers:
-    build: ./srv/srvusers
+    build: ./srv/users
     command: --registry_address=consul:8500
     environment:
       - JAEGER_AGENTHOSTPORT=${JAEGER_AGENTHOSTPORT}
@@ -86,7 +150,39 @@ services:
   # srvhistoryuserlogin
   ##############################
   srvhistoryuserlogin:
-    build: ./srv/srvhistoryuserlogin
+    build: ./srv/historyuserlogin
+    command: --registry_address=consul:8500
+    environment:
+      - JAEGER_AGENTHOSTPORT=${JAEGER_AGENTHOSTPORT}
+      - DATABASE_SERVER_HOST=${DATABASE_SERVER_HOST}
+      - DATABASE_SERVER_PORT=${DATABASE_SERVER_PORT}
+      - DATABASE_SERVER_DBNAME=${DATABASE_SERVER_DBNAME}
+      - DATABASE_SERVER_USERNAME=${DATABASE_SERVER_USERNAME}
+      - DATABASE_SERVER_PASSWORD=${DATABASE_SERVER_PASSWORD}
+      - DATABASE_SERVER_CHARSET=${DATABASE_SERVER_CHARSET}
+    links:
+      - consul
+      - jaeger
+  ##############################
+  # api usersgroup
+  ##############################
+  apiusersgroup:
+    build: ./api/usersgroup
+    command: --registry_address=consul:8500
+    links:
+      - consul
+      - jaeger
+    environment:
+      - JAEGER_AGENTHOSTPORT=${JAEGER_AGENTHOSTPORT}
+    depends_on:
+      - microapi
+      - microweb
+      - srvusersgroup
+  ##############################
+  # srv usersgroup
+  ##############################
+  srvusersgroup:
+    build: ./srv/usersgroup
     command: --registry_address=consul:8500
     environment:
       - JAEGER_AGENTHOSTPORT=${JAEGER_AGENTHOSTPORT}
@@ -114,6 +210,9 @@ services:
     depends_on:
       - jaeger
       - apiusers
+      - apicolumns
+      - apirole
+      - apiusersgroup
   ##############################
   # swagger
   ##############################

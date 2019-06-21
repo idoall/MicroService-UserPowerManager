@@ -11,7 +11,7 @@ import (
 	"gitlab.mshk.top/TokenExchange/tokenexchangemodels/models"
 )
 
-var BaseURL = "in"
+var BaseURL = "index"
 var (
 	TemplageBaseURL = "index"
 	baseTitle       = "首页"
@@ -56,7 +56,7 @@ func (e *IndexController) Get() {
 	e.Data["UserName"] = userName
 	e.Data["UserID"] = userID
 	e.Data["URL_IframeIndex"] = fmt.Sprintf("%s/%s/iframe_index", versionAdminURL, TemplageBaseURL)
-	e.Data["LoginOutURL"] = beego.AppConfig.String("WebSite::URL_Logout")
+	e.Data["LoginOutURL"] = fmt.Sprintf("%s/%s", admin.AdminBaseRoterVersion, beego.AppConfig.String("WebSite::URL_Logout"))
 
 	e.SetMortStype()
 	e.SetMortScript()

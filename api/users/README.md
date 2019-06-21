@@ -34,4 +34,8 @@ $ curl -XPOST -H 'Content-Type: application/x-www-form-urlencoded' \
 
 # Get 方法，获取用户列表
 $ curl "http://localhost:8080/mshk/v1/users/Users/getList?PageSize=2&CurrentPageIndex=1&OrderBy=-id"
+{"rows":[{"ID":1,"UserName":"admin","RealyName":"admin","Password":"93a57b286d7f77fdce1c8e17f5c2dfb6459c739b058c85b168cdd1df599e1f35","AuthKey":"1118447772383584256","Email":"admin@mshk.top","Note":"adminnote","CreateTime":1555048377,"LastUpdateTime":1555051238}],"total":1}
+
+# Get 方法，获取单个用户列表
+$ curl "http://localhost:8080/mshk/v1/users/Users/getUser?ID=1"
 ```

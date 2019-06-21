@@ -1,5 +1,5 @@
 FROM alpine
 ADD conf /conf
-ADD mshk.apiusers /mshk.apiusers
+ADD mshk.columns /mshk.columns
 RUN mkdir -p /logs
-ENTRYPOINT [ "/mshk.apiusers" ]
+ENTRYPOINT [ "/mshk.columns" ]

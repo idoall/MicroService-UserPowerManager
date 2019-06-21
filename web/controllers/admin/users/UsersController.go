@@ -6,11 +6,9 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin/usersgroup"
-
 	"github.com/idoall/MicroService-UserPowerManager/utils/request"
-
 	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin"
+	"github.com/idoall/MicroService-UserPowerManager/web/controllers/admin/usersgroup"
 	"github.com/idoall/MicroService-UserPowerManager/web/models"
 )
 

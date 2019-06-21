@@ -156,5 +156,5 @@ $ docker-compose up swagger
 
 `swagger` 编辑器
 ```
-docker run -it --rm -p 80:8080 --name swagger-editor swaggerapi/swagger-editor
+$ docker run -it --rm -p 80:8080 --name swagger-editor swaggerapi/swagger-editor
 ```

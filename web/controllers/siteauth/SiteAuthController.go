@@ -27,7 +27,12 @@ var BaseTitle = "登陆"
 func (e *SiteAuthController) Login() {
 
 	e.Data["URL_CheckLogin"] = fmt.Sprintf("/%s/%s/checklogin", admin.AdminBaseRoterVersion, TemplageBaseURL)
-	e.Data["Referer"] = e.GetString("Referer")
+	fmt.Println("referer", e.GetString("Referer") == "")
+	if e.GetString("Referer") != "" {
+		e.Data["Referer"] = e.GetString("Referer")
+	} else {
+		e.Data["Referer"] = fmt.Sprintf("/%s%s", admin.AdminBaseRoterVersion, utils.TConfig.String("WebSite::URL_AdmonHomePage"))
+	}
 	e.Data["title"] = fmt.Sprintf("%s管理", BaseTitle)
 
 	e.SetMortStype()

@@ -175,7 +175,7 @@ func (e *SrvRole) GetRolesForUser(ctx context.Context, req *proto.GetRolesForUse
 	namespaceID := inner.NAMESPACE_MICROSERVICE_SRVROLE
 
 	if utils.RunMode == "dev" {
-		inner.Mlogger.Infof("Received %s Service [ROLE][GetRolesForUser] request", namespaceID)
+		inner.Mlogger.Infof("Received %s Service [ROLE][GetRolesForUser][%s] request", namespaceID, req.Name)
 	}
 
 	//取出用户组的所有权限

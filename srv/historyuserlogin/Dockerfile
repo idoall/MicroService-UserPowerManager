@@ -1,6 +1,6 @@
 FROM idoall/alpine:3.9.3
 ADD conf /conf
-ADD mshk.srvhistoryuserlogin /mshk.srvhistoryuserlogin
+ADD mshk.historyuserlogin /mshk.historyuserlogin
 RUN mkdir -p /logs
     
-ENTRYPOINT [ "/mshk.srvhistoryuserlogin" ]
+ENTRYPOINT [ "/mshk.historyuserlogin" ]
