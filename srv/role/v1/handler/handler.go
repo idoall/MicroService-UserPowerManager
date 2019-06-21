@@ -30,7 +30,7 @@ func (e *SrvRole) GetPermissionsForUser(ctx context.Context, req *proto.ForUserR
 	}
 
 	//取出用户组的所有权限
-	columnPowerList := RoleS.GetPermissionsForUser("usergroup_" + req.User)
+	columnPowerList := RoleS.GetPermissionsForUser(req.User)
 
 	// 输出权限列表
 	for _, cv := range columnPowerList {

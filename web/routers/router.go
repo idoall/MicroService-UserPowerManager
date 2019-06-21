@@ -1,10 +1,3 @@
-// @APIVersion 1.0.0
-// @Title beego Test API
-// @Description beego has a very cool tools to autogenerate documents for your API
-// @Contact astaxie@gmail.com
-// @TermsOfServiceUrl http://beego.me/
-// @License Apache 2.0
-// @LicenseUrl http://www.apache.org/licenses/LICENSE-2.0.html
 package routers
 
 import (
@@ -73,6 +66,8 @@ func init() {
 			beego.NSNamespace(fmt.Sprintf("/%s", index.TemplageBaseURL),
 				// 首页，默认调用 Get 方法
 				beego.NSRouter("/", routerIndexModel),
+				// iframe 首页
+				beego.NSRouter("/iframe_index", routerIndexModel, "*:IframeDefault"),
 			),
 
 			// 用户管理

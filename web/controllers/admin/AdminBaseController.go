@@ -123,26 +123,30 @@ func (e *AdminBaseController) HasPermissions(userID, powerID int64) bool {
 	var responseRolsJSON []string
 
 	// 发送 http 请求
-	if err = request.Request.WebPOSTSendPayload("ServiceURL_Role_GetRolesForUser", bytes.NewBufferString(params.Encode()), responseRolsJSON); err != nil {
+	if err = request.Request.WebPOSTSendPayload("ServiceURL_Role_GetRolesForUser", bytes.NewBufferString(params.Encode()), &responseRolsJSON); err != nil {
 		inner.Mlogger.Error("HasPermissions ServiceURL_Role_GetRolesForUser Error:" + err.Error())
 		return false
 	}
 
 	powerIDString := fmt.Sprintf("%d", powerID)
+
+	// 遍历用户的所有角色（组）
 	for _, v := range responseRolsJSON {
 
 		params = url.Values{}
 		params.Set("User", v)
 
+		// 取出角色（组）的权限
 		var responsePermissionsJSON []map[string][]string
-
-		if err = request.Request.WebGETSendPayload("ServiceURL_Role_GetPermissionsForUser", params, &responseRolsJSON); err != nil {
+		if err = request.Request.WebGETSendPayload("ServiceURL_Role_GetPermissionsForUser", params, &responsePermissionsJSON); err != nil {
 			inner.Mlogger.Error("HasPermissions ServiceURL_Role_GetPermissionsForUser Error:" + err.Error())
 			return false
 		}
 
+		// 遍历所属角色（组）的权限，看和要检查的 powerIDString 是否匹配
 		for _, ov := range responsePermissionsJSON {
 			if ov["Two"][1] == powerIDString {
+				fmt.Println("ov:", ov, "   powerIDString:", powerIDString)
 				return true
 			}
 		}

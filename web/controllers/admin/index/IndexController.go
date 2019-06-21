@@ -22,7 +22,22 @@ type IndexController struct {
 	admin.AdminBaseController
 }
 
-// Get 获取首页信息
+// IframeDefault 框架内的首页
+func (e *IndexController) IframeDefault() {
+	e.Data["title"] = fmt.Sprintf("%s", baseTitle)
+
+	e.SetMortStype()
+	e.SetMortScript()
+	e.AppendCustomScripts(nil)
+	e.AppendCustomStyles(nil)
+
+	e.Layout = "admin/layout/layout.html"
+	e.LayoutSections = make(map[string]string)
+	e.LayoutSections["CustomHeader"] = "admin/layout/layout-customsheader.html"
+	e.TplName = fmt.Sprintf("%s/%s/iframe_index.html", admin.TemplageAdminBaseURL, TemplageBaseURL)
+}
+
+// Get 获取 Admin 默认带 Iframe 首页信息
 func (e *IndexController) Get() {
 
 	var result models.Result
@@ -37,8 +52,10 @@ func (e *IndexController) Get() {
 	}
 
 	// set Data
+	versionAdminURL := e.GetVersionAdminBaseURL()
 	e.Data["UserName"] = userName
 	e.Data["UserID"] = userID
+	e.Data["URL_IframeIndex"] = fmt.Sprintf("%s/%s/iframe_index", versionAdminURL, TemplageBaseURL)
 	e.Data["LoginOutURL"] = beego.AppConfig.String("WebSite::URL_Logout")
 
 	e.SetMortStype()
@@ -47,7 +64,7 @@ func (e *IndexController) Get() {
 	e.TplName = fmt.Sprintf("%s/%s/index.html", admin.TemplageAdminBaseURL, TemplageBaseURL)
 }
 
-// GetAdminMenuHtml Html
+// GetAdminMenuHtml 返回管理员左侧菜单
 func (e *IndexController) GetAdminMenuHTML(userID int64) string {
 	columnList, err := new(columns.ColumnsController).GetTreeStruct()
 	if err != nil {
@@ -88,12 +105,9 @@ func (e *IndexController) GetAdminMenuHTML(userID int64) string {
 	var buffer bytes.Buffer
 	for _, v := range columnList {
 		//如果没有一级菜单权限 continue
-		// if !e.HasPermissions(fmt.Sprintf("%d", userID), fmt.Sprintf("%d", v.ID)) {
-		// 	continue
-		// }
-		// if !e.HasPermissions(userID, v.ID) {
-		// 	continue
-		// }
+		if !e.HasPermissions(userID, v.ID) {
+			continue
+		}
 
 		// 如果没有二级菜单，直接展示一级菜单
 		if v.Nodes == nil {
@@ -105,10 +119,11 @@ func (e *IndexController) GetAdminMenuHTML(userID int64) string {
 			var bufferSecond bytes.Buffer
 			isHaveSvChildNodes := false //是否真的有下一级菜单
 			for _, sv := range v.Nodes {
+
 				//如果没有二级菜单权限 continue
-				// if !e.HasPermissions(userID, sv.ID) {
-				// 	continue
-				// }
+				if !e.HasPermissions(userID, sv.ID) {
+					continue
+				}
 
 				//如果有二级菜单，并且二级菜单是有显示的，在一级菜单上显示 左侧箭头
 				if sv.IsShowNav {

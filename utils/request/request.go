@@ -114,7 +114,7 @@ func (r *Requester) DoRequest(req *http.Request, method, path string, headers ma
 
 	resp.Body.Close()
 	if verbose {
-		inner.Mlogger.Warningf("%s raw response: %s", r.Name, string(contents[:]))
+		inner.Mlogger.Warning(fmt.Sprintf("%s raw response: %s", r.Name, string(contents[:])))
 	}
 	if debug {
 		r.debug(httputil.DumpRequestOut(req, true))

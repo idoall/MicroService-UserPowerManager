@@ -23,3 +23,22 @@ INSERT INTO `users_group` VALUES (1, '普通用户组', 0, 0, '', '2019-06-16 02
 INSERT INTO `users_group` VALUES (2, '管理员', 0, 0, '', '2019-06-16 02:54:44', '2019-06-16 02:54:44');
 INSERT INTO `users_group` VALUES (3, '超级管理员', 0, 0, '', '2019-06-16 02:54:54', '2019-06-16 02:54:54');
 COMMIT;
+
+-- ----------------------------
+-- Records of casbin_rule
+-- ----------------------------
+BEGIN;
+INSERT INTO `casbin_rule` VALUES (1, 'g', '1', 'usergroup_3', '', '', '', '');
+INSERT INTO `casbin_rule` VALUES (2, 'p', 'usergroup_3', '1', '', 'GET', '', '');
+INSERT INTO `casbin_rule` VALUES (3, 'p', 'usergroup_3', '2', '', 'GET', '', '');
+INSERT INTO `casbin_rule` VALUES (4, 'p', 'usergroup_3', '3', '', 'GET', '', '');
+INSERT INTO `casbin_rule` VALUES (5, 'p', 'usergroup_3', '4', '', 'GET', '', '');
+INSERT INTO `casbin_rule` VALUES (6, 'p', 'usergroup_3', '5', '', 'GET', '', '');
+INSERT INTO `casbin_rule` VALUES (7, 'p', 'usergroup_3', '6', '', 'GET', '', '');
+INSERT INTO `casbin_rule` VALUES (8, 'p', 'usergroup_3', '7', '', 'GET', '', '');
+INSERT INTO `casbin_rule` VALUES (9, 'p', 'usergroup_3', '8', '', 'GET', '', '');
+INSERT INTO `casbin_rule` VALUES (10, 'p', 'usergroup_3', '9', '', 'GET', '', '');
+INSERT INTO `casbin_rule` VALUES (11, 'p', 'usergroup_3', '10', '', 'GET', '', '');
+INSERT INTO `casbin_rule` VALUES (12, 'p', 'usergroup_3', '11', '', 'GET', '', '');
+INSERT INTO `casbin_rule` VALUES (13, 'p', 'usergroup_3', '12', '', 'GET', '', '');
+COMMIT;
