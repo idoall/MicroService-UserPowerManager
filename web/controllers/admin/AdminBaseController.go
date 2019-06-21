@@ -136,10 +136,10 @@ func (e *AdminBaseController) HasPermissions(userID, powerID int64) bool {
 		params = url.Values{}
 		params.Set("User", v)
 
-		// 取出角色（组）的权限
+		// 根据角色取出角色（组）的权限
 		var responsePermissionsJSON []map[string][]string
-		if err = request.Request.WebGETSendPayload("ServiceURL_Role_GetPermissionsForUser", params, &responsePermissionsJSON); err != nil {
-			inner.Mlogger.Error("HasPermissions ServiceURL_Role_GetPermissionsForUser Error:" + err.Error())
+		if err = request.Request.WebGETSendPayload("ServiceURL_Role_GetPermissionsForRole", params, &responsePermissionsJSON); err != nil {
+			inner.Mlogger.Error("HasPermissions ServiceURL_Role_GetPermissionsForRole Error:" + err.Error())
 			return false
 		}
 

@@ -24,6 +24,59 @@ type Role struct {
 
 // route POST /mshk/api/v1/Role/add
 // 根据用户获取权限
+func (e *Role) GetPermissionsForRole(ctx context.Context, req *api.Request, rsp *api.Response) error {
+
+	var err error
+
+	// 写入一个 jaeger span
+	ctx, span := jaeger.StartSpan(ctx, "Api_Role_GetPermissionsForRole_Begin")
+	if span != nil {
+		defer span.Finish()
+	}
+
+	namespaceID := inner.NAMESPACE_MICROSERVICE_APIROLE
+
+	// debug
+	if utils.RunMode == "dev" {
+		inner.Mlogger.Infof("Received %s API [Role][GetPermissionsForRole] request", namespaceID)
+	}
+
+	// 获取请求参数 - 开始
+	var user string
+	if req.Get["User"] == nil || req.Get["User"].Values[0] == "" {
+		return errors.InternalServerError(namespaceID, "User 不能为空")
+	} else {
+		user = req.Get["User"].Values[0]
+	}
+
+	// 调用服务端方法
+	srvResponse, err := e.Client.GetPermissionsForUser(ctx, &srvProto.ForUserRequest{User: user})
+	if err != nil {
+		return errors.InternalServerError(namespaceID, err.Error())
+	}
+
+	// 输出的 json
+	b, _ := commonutils.JSONEncode(srvResponse.One)
+	rsp.StatusCode = 200
+	rsp.Body = string(b)
+
+	// debug
+	if utils.RunMode == "dev" {
+		inner.Mlogger.Info(srvResponse)
+		inner.Mlogger.Info("rsp.Body", rsp.Body)
+	}
+
+	// 写入一个 jaeger span
+	ctx, span = jaeger.StartSpan(ctx, "Api_Role_GetPermissionsForRole_End")
+	if span != nil {
+		defer span.Finish()
+	}
+
+	return nil
+}
+
+// route POST /mshk/api/v1/Role/add
+// 根据用户获取权限
 func (e *Role) GetPermissionsForUser(ctx context.Context, req *api.Request, rsp *api.Response) error {
 
 	var err error
@@ -46,7 +99,7 @@ func (e *Role) GetPermissionsForUser(ctx context.Context, req *api.Request, rsp 
 	if req.Get["User"] == nil || req.Get["User"].Values[0] == "" {
 		return errors.InternalServerError(namespaceID, "User 不能为空")
 	} else {
-		user = req.Get["User"].Values[0]
+		user = "usergroup_" + req.Get["User"].Values[0]
 	}
 
 	// 调用服务端方法
