@@ -12,7 +12,7 @@ info:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
 host: "localhost:8080"
-basePath: "/mshk/api/v1"
+basePath: "/mshk/v1/"
 tags:
 - name: "users"
   description: "用户管理"
@@ -20,12 +20,12 @@ tags:
     description: "Find out more"
     url: "http://mshk.top"
 schemes:
-- "https"
 - "http"
+- "https"
 produces:
 - "application/json"
 paths:
-  /ApiUsers/add:
+  /users/Users/add:
     post:
       tags:
       - "users"
@@ -71,38 +71,7 @@ paths:
               NewUserId:
                 type: integer
                 description: 新用户的Id.
-  /ApiUsers/batchDelete:
-    post:
-      tags:
-      - "users"
-      summary: "批量删除用户信息户"
-      description: "调用 go-micro 的 api 服务批量删除用户信息"
-      operationId: "batchDelete"
-      consumes:
-      - "application/x-www-form-urlencoded"
-      parameters:
-      - in: "formData"
-        name: "UserIds"
-        type: "array"
-        description: "用逗号分隔的Id列表"
-        required: true
-        items:
-          type: "integer"
-          multipleOf: 10
-      responses:
-        500:
-          description: "服务器错误"
-          schema:
-            $ref: "#/definitions/InternalServerError"
-        200:
-          description: 是否删除成功，0未成功，1成功
-          schema:
-            type: object
-            properties:
-              Deleted:
-                type: integer
-                description: 0或1.
-  /ApiUsers/getList:
+  /users/Users/getList:
     get:
       tags:
       - "users"
@@ -137,7 +106,7 @@ paths:
           description: "返回用户的实例"
           schema:
             $ref: "#/definitions/User"
-  /ApiUsers/getUser:
+  /mshk/v1/users/Users/getUser:
     get:
       tags:
       - "users"
@@ -148,14 +117,13 @@ paths:
       - "application/html"
       parameters:
       - in: "query"
-        name: "UserId"
+        name: "ID"
         type: "integer"
         format: "int64"
         description: "用户Id"
       - in: "query"
         name: "UserName"
-        type: "integer"
-        format: "int64"
+        type: "string"
         description: "用户名"
       responses:
         200:
@@ -166,26 +134,25 @@ paths:
           description: "服务器错误"
           schema:
             $ref: "#/definitions/InternalServerError"
-  /ApiUsers/update:
+  /mshk/v1/users/Users/update:
     post:
       tags:
       - "users"
-      summary: "获取单个用户，根据Id或用户名"
-      description: "调用 go-micro 的 api 服务，获取单个用户，根据Id或用户名"
+      summary: "修改用户信息"
+      description: "调用 go-micro 的 api 服务，修改用户信息"
       operationId: "update"
       consumes:
       - "application/x-www-form-urlencoded"
       parameters:
       - in: "formData"
-        name: "UserId"
+        name: "ID"
         type: "integer"
         format: "int64"
         required: true
-        description: "用户Id"
+        description: "要修改的用户ID"
       - in: "query"
         name: "UserName"
-        type: "integer"
-        format: "int64"
+        type: "string"
         required: true
         description: "用户名"
       - in: "query"
@@ -223,7 +190,38 @@ paths:
           description: "服务器错误"
           schema:
             $ref: "#/definitions/InternalServerError"
-  /ApiUsers/userLogin:
+  /mshk/v1/users/Users/batchDelete:
+    post:
+      tags:
+      - "users"
+      summary: "批量删除用户信息户"
+      description: "调用 go-micro 的 api 服务批量删除用户信息"
+      operationId: "batchDelete"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+      - in: "formData"
+        name: "IDArray"
+        type: "array"
+        description: "用逗号分隔的Id列表"
+        required: true
+        items:
+          type: "integer"
+          multipleOf: 10
+      responses:
+        500:
+          description: "服务器错误"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+        200:
+          description: 是否删除成功，0未成功，1成功
+          schema:
+            type: object
+            properties:
+              Deleted:
+                type: integer
+                description: 0或1.
+  /mshk/v1/users/Users/userLogin:
     post:
       tags:
       - "users"
@@ -253,17 +251,14 @@ paths:
       - in: "formData"
         name: "GeoRemoteAddr"
         type: "string"
-        required: true
         description: "用户的IP地址"
       - in: "formData"
         name: "GeoCountry"
         type: "string"
-        required: true
         description: "用户所在国家"
       - in: "formData"
         name: "GeoCity"
         type: "string"
-        required: true
         description: "用户所在城市"
       responses:
         200:
@@ -278,7 +273,7 @@ paths:
           description: "服务器错误"
           schema:
             $ref: "#/definitions/InternalServerError"
-  /ApiUsers/validToken:
+  /mshk/v1/users/Users/validToken:
     post:
       tags:
       - "users"
@@ -304,8 +299,15 @@ paths:
             type: object
             properties:
               Vaild:
-                type: integer
+                type: boolean
                 description: 是否验证通过，0表示false，1表示true.
+              UserID:
+                type: integer
+                format: "int64"
+                description: 用户ID.
+              UserName:
+                type: string
+                description: 用户名.
               TokenString:
                 type: string
                 description: 经过加密的用户Token,如果没有设置`UpdateExpirationDate`参数，会返回原Token.
