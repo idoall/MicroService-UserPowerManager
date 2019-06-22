@@ -106,7 +106,7 @@ paths:
           description: "返回用户的实例"
           schema:
             $ref: "#/definitions/User"
-  /mshk/v1/users/Users/getUser:
+  /users/Users/getUser:
     get:
       tags:
       - "users"
@@ -134,7 +134,7 @@ paths:
           description: "服务器错误"
           schema:
             $ref: "#/definitions/InternalServerError"
-  /mshk/v1/users/Users/update:
+  /users/Users/update:
     post:
       tags:
       - "users"
@@ -190,7 +190,7 @@ paths:
           description: "服务器错误"
           schema:
             $ref: "#/definitions/InternalServerError"
-  /mshk/v1/users/Users/batchDelete:
+  /users/Users/batchDelete:
     post:
       tags:
       - "users"
@@ -221,7 +221,7 @@ paths:
               Deleted:
                 type: integer
                 description: 0或1.
-  /mshk/v1/users/Users/userLogin:
+  /users/Users/userLogin:
     post:
       tags:
       - "users"
@@ -273,7 +273,7 @@ paths:
           description: "服务器错误"
           schema:
             $ref: "#/definitions/InternalServerError"
-  /mshk/v1/users/Users/validToken:
+  /users/Users/validToken:
     post:
       tags:
       - "users"
@@ -320,7 +320,7 @@ definitions:
   User:
     type: "object"
     properties:
-      Id:
+      ID:
         type: "integer"
         format: "int64"
         description: "用户Id"
@@ -353,7 +353,7 @@ definitions:
         format: "date-time"
         description: "最后修改时间"
     required:
-    - Id
+    - ID
     - UserName
     - Password
     - Email

@@ -76,7 +76,7 @@ $ protoc --version
 ### 安装 Go Micro
 
 ```
-go get github.com/micro/go-micro
+$ go get github.com/micro/go-micro
 ```
 
 ### 安装 Golang Protobuf
@@ -89,7 +89,7 @@ $ go get -u -v github.com/micro/protoc-gen-micro
 ### 安装 Toolkit
 
 ```
-go get github.com/micro/micro
+$ go get github.com/micro/micro
 ```
 
 在项目中初始化相关依赖，需要golang 1.12+
@@ -112,6 +112,8 @@ $ go mod tidy
 $ bee generate appcode -tables="users" -driver=mysql -conn="root:123456@(localhost:20081)/UserPowerManager?charset=utf8"
 ```
 
+# 运行程序
+
 ## 生成 protobuf 文件
 
 执行以下命令，可以自动操作
@@ -119,7 +121,7 @@ $ bee generate appcode -tables="users" -driver=mysql -conn="root:123456@(localho
 $ make proto
 ```
 
-## 启动 User 服务 && 测试
+## 启动微服务 && 测试
 
 编辑 `.env` 文件，**修改数据库的配置**，`docker-compose` 运行时会优先读取 `.env` 中的变量进行替换
 
@@ -133,9 +135,9 @@ $ make build
 $ make run
 ```
 
-浏览 http://localhost:18080/v1/admin/users 用户列表页面，默认没有登录，会 302 跳转到登录页面，使用用户名 `admin` 密码 `admin` 登录。
+浏览 http://localhost:18080/v1/admin 用户列表页面，默认没有登录，会 302 跳转到登录页面，使用用户名 `admin` 密码 `admin` 登录。
 
-登录成功以后，可以对添加、修改、删除用户。同时浏览 http://localhost:16686 可以看到登录过程中，记录到 `jaeger` 的微服务之间调用关系，如下图：
+登录成功以后，同时浏览 http://localhost:16686 可以看到登录过程中，记录到 `jaeger` 的微服务之间调用关系，如下图：
 
 ![mshk.top](microservice_userpowermanager.png)
 
