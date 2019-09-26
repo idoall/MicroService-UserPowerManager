@@ -1,0 +1,27 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+.DS_Store
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Project
+*.log
+*.bak
+logs
+mshk.*
+web/web
+web/web.tar.gz
+web-exchange/web-exchange
+web-exchange/web-exchange.tar.gz
+vendor
+api/strategy/strategy
+api/strategy/strategy.tar.gz
+MicroService-UserPowerManager.tar.gz

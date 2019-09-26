@@ -1,0 +1,335 @@
+version: '3.7'
+# https://docs.docker.com/compose/compose-file/
+# 只包含 public Demo 不包含 strategy 等信息
+# 启动：docker-compose -f up -d
+# 停止：docker-compose -f down
+
+##############################
+# 从 v3.7 开始（对于 3.x 系列），或者从 v2.4 开始（对于 2.x 系列），扩展字段也可以被放在 服务，卷，网络，配置项以及敏感信息项顶级章节之下的第一级
+##############################
+x-logging:
+  &default-logging
+  options:
+    max-size: '20m'
+    max-file: '10'
+  driver: json-file
+x-deploy:
+  &default-deploy
+  replicas: 1
+  update_config:
+    delay: 1s
+  restart_policy: # 当容器实例退出时，如何重启。替换 restart
+    condition: on-failure
+    delay: 5s
+    max_attempts: 3
+    window: 120s
+  resources: # 配置资源约束
+    limits:
+      cpus: '0.50'
+      memory: 50M
+    reservations:
+      cpus: '0.25'
+      memory: 20M
+x-labels:
+  &default-labels
+  mshk.top/instance: "microservice-exchange"
+  mshk.top/site: "mshk.top"
+x-networks:
+  &default-networks
+    - mshk-top
+
+services:
+  consul:
+    command:  -server -bootstrap -ui-dir /ui
+    image: progrium/consul:latest
+    hostname: consul
+    ports:
+      - '8300:8300'
+      - '8301:8301'
+      - '8301:8301/udp'
+      - '8500:8500'
+      - '8600:8600'
+      - '8600:8600/udp'
+    depends_on:
+     - dbproxy
+    networks: *default-networks
+  ##############################
+  # micro api
+  ##############################
+  microapi:
+    command: --registry=consul --registry_address=consul:8500 api --handler=api
+    image: microhq/micro:latest
+    hostname: microapi
+    links:
+      - consul
+    depends_on:
+     - consul
+    ports:
+      - "8080:8080"
+    networks: *default-networks
+    deploy:
+      replicas: 1
+      update_config:
+        delay: 1s
+      restart_policy:
+        condition: on-failure
+  # ##############################
+  # # micro web
+  # ##############################
+  microweb:
+    command: --registry=consul --registry_address=consul:8500 web
+    image: microhq/micro:latest
+    hostname: microweb
+    links:
+      - consul
+    depends_on:
+     - consul
+    ports:
+      - "8082:8082"
+    networks: *default-networks
+    deploy:
+      replicas: 1
+      update_config:
+        delay: 1s
+      restart_policy:
+        condition: on-failure
+  ##############################
+  # jaeger
+  ##############################
+  jaeger:
+    image: jaegertracing/all-in-one:1.11
+    hostname: jaeger
+    links:
+      - consul
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14268:14268"
+      - "14250:14250"
+      - "9411:9411"
+    networks: *default-networks
+  ##############################
+  # DBProxy 数据库代理
+  ##############################
+  dbproxy:
+    build: ./api/dbproxy
+    hostname: dbproxy
+    env_file: ./docker-compose.dbproxy.env
+    ports:
+      - "30080:13306"
+    networks: *default-networks
+    logging: *default-logging
+    labels: *default-labels
+    deploy: *default-deploy
+  ##############################
+  # api columns
+  ##############################
+  apicolumns:
+    build: ./api/columns
+    command: --registry=consul --registry_address=consul:8500
+    hostname: apicolumns
+    env_file: 
+      - ./docker-compose.jaeger.env
+    depends_on:
+      - microapi
+      - microweb
+      - srvcolumns
+      - jaeger
+    networks: *default-networks
+    logging: *default-logging
+    labels: *default-labels
+    deploy: *default-deploy
+  ##############################
+  # srv columns
+  ##############################
+  srvcolumns:
+    build: ./srv/columns
+    command: --registry=consul --registry_address=consul:8500
+    hostname: srvcolumns
+    env_file: 
+      - ./docker-compose.jaeger.env
+      - ./docker-compose.srv.common.env
+    depends_on:
+      - dbproxy
+      - jaeger
+    networks: *default-networks
+    logging: *default-logging
+    labels: *default-labels
+    deploy: *default-deploy
+  ##############################
+  # api role
+  ##############################
+  apirole:
+    build: ./api/role
+    command: --registry=consul --registry_address=consul:8500
+    hostname: apirole
+    env_file: 
+      - ./docker-compose.jaeger.env
+    depends_on:
+      - microapi
+      - microweb
+      - srvrole
+      - jaeger
+    networks: *default-networks
+    logging: *default-logging
+    labels: *default-labels
+    deploy: *default-deploy
+  ##############################
+  # srv role
+  ##############################
+  srvrole:
+    build: ./srv/role
+    command: --registry=consul --registry_address=consul:8500
+    hostname: srvrole
+    env_file: 
+      - ./docker-compose.jaeger.env
+      - ./docker-compose.srv.common.env
+    depends_on:
+      - jaeger
+      - dbproxy
+    networks: *default-networks
+    logging: *default-logging
+    labels: *default-labels
+    deploy: *default-deploy
+  ##############################
+  # api users
+  ##############################
+  apiusers:
+    build: ./api/users
+    command: --registry=consul --registry_address=consul:8500
+    hostname: apiusers
+    env_file: 
+      - ./docker-compose.jaeger.env
+    depends_on:
+      - microapi
+      - jaeger
+      - microweb
+      - srvusers
+      - srvhistoryuserlogin
+    networks: *default-networks
+    logging: *default-logging
+    labels: *default-labels
+    deploy: *default-deploy
+  ##############################
+  # srv users
+  ##############################
+  srvusers:
+    build: ./srv/users
+    command: --registry=consul --registry_address=consul:8500
+    hostname: srvusers
+    env_file: 
+      - ./docker-compose.jaeger.env
+      - ./docker-compose.srv.common.env
+    depends_on:
+      - srvhistoryuserlogin
+      - jaeger
+      - dbproxy
+    networks: *default-networks
+    logging: *default-logging
+    labels: *default-labels
+    deploy: *default-deploy
+  ##############################
+  # srvhistoryuserlogin
+  ##############################
+  srvhistoryuserlogin:
+    build: ./srv/historyuserlogin
+    command: --registry=consul --registry_address=consul:8500
+    hostname: srvhistoryuserlogin
+    env_file: 
+      - ./docker-compose.jaeger.env
+      - ./docker-compose.srv.common.env
+    depends_on:
+      - jaeger
+      - dbproxy
+    networks: *default-networks
+    logging: *default-logging
+    labels: *default-labels
+    deploy: *default-deploy
+  ##############################
+  # api usersgroup
+  ##############################
+  apiusersgroup:
+    build: ./api/usersgroup
+    command: --registry=consul --registry_address=consul:8500
+    hostname: apiusersgroup
+    env_file: 
+      - ./docker-compose.jaeger.env
+    depends_on:
+      - microapi
+      - microweb
+      - srvusersgroup
+      - jaeger
+      - dbproxy
+    networks: *default-networks
+    logging: *default-logging
+    labels: *default-labels
+    deploy: *default-deploy
+  ##############################
+  # srv usersgroup
+  ##############################
+  srvusersgroup:
+    build: ./srv/usersgroup
+    command: --registry=consul --registry_address=consul:8500
+    hostname: srvusersgroup
+    env_file: 
+      - ./docker-compose.jaeger.env
+      - ./docker-compose.srv.common.env
+    depends_on:
+      - jaeger
+      - dbproxy
+    networks: *default-networks
+    logging: *default-logging
+    labels: *default-labels
+    deploy: *default-deploy
+  ##############################
+  # beego web
+  ##############################
+  web:
+    build: ./web
+    ports:
+      - "18080:80"
+    environment:
+      - MICROSERVICE_HOSTPORT=http://microapi:8080
+      - HttpPort=80
+    depends_on:
+      - jaeger
+      - apiusers
+      - apicolumns
+      - apirole
+      - apiusersgroup
+    networks: *default-networks
+    logging: *default-logging
+    labels: *default-labels
+    deploy: *default-deploy
+  ##############################
+  # swagger
+  ##############################
+  swagger:
+    build: ./swagger
+    ports:
+      - "18081:8080"
+    networks: *default-networks
+    logging: *default-logging
+    labels: *default-labels
+    deploy: *default-deploy
+  #############################
+  # registrator 监听容器中暴露的端口，端口发生变化，通知注册中心作出相应处理
+  #############################
+  # registrator:
+  #   image: gliderlabs/registrator:master
+  #   hostname: registrator
+  #   depends_on:
+  #     - "consul"
+  #   volumes:
+  #     - "/var/run/docker.sock:/tmp/docker.sock"
+  #   command: -internal consul://consul:8500
+
+# 统一网络设置
+# 在单节点宿主机上使用 bridge 驱动，而在 swarm mode 中使用 overlay 驱动。
+networks:
+  mshk-top:

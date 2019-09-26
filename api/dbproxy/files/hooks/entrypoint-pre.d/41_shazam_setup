@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+
+SHAZAMPATH=/home/work/_app/_shazam/
+DBPROXYFOLEDNAMESPACEFILE=$SHAZAMPATH/etc/file/namespace/UserPowerManager.json
+
+echo "del old gaea config"
+rm -rf $SHAZAMPATH/etc
+echo "copying gaea config"
+cp -r /etc/_gaea/etc $SHAZAMPATH/
+mkdir -p $SHAZAMPATH/etc/file/namespace/
+cp -r $SHAZAMPATH/etc/file/namespace.exp/UserPowerManager.json $DBPROXYFOLEDNAMESPACEFILE
+
+# -----------------------------------------------------------------------------
+# 设置HOST
+# -----------------------------------------------------------------------------
+if [ ! -z "$MYSQL_HOST" ]; then
+    sed -i "s/MSHK_HOST/$MYSQL_HOST/" $DBPROXYFOLEDNAMESPACEFILE
+fi
+# -----------------------------------------------------------------------------
+# 设置PORT
+# -----------------------------------------------------------------------------
+if [ ! -z "$MYSQL_PORT" ]; then
+    sed -i "s/MSHK_PORT/$MYSQL_PORT/" $DBPROXYFOLEDNAMESPACEFILE
+fi
+# -----------------------------------------------------------------------------
+# 设置DBName
+# -----------------------------------------------------------------------------
+if [ ! -z "$MYSQL_DBNAME" ]; then
+    sed -i "s/MSHK_DBNAME/$MYSQL_DBNAME/" $DBPROXYFOLEDNAMESPACEFILE
+fi
+# -----------------------------------------------------------------------------
+# 设置数据库用户名
+# -----------------------------------------------------------------------------
+if [ ! -z "$MYSQL_USERNAME" ]; then
+    sed -i "s/MSHK_USERNAME/$MYSQL_USERNAME/" $DBPROXYFOLEDNAMESPACEFILE
+fi
+# -----------------------------------------------------------------------------
+# 设置root密码
+# -----------------------------------------------------------------------------
+if [ ! -z "$MYSQL_PASSWORD" ]; then
+    sed -i "s/MSHK_PASSWORD/$MYSQL_PASSWORD/" $DBPROXYFOLEDNAMESPACEFILE
+fi
+# -----------------------------------------------------------------------------
+# 设置 DBPROXY 用户名
+# -----------------------------------------------------------------------------
+if [ ! -z "$DBPROXY_USERNAME" ]; then
+    sed -i "s/MSHK_DBPROXY_USERNAME/$DBPROXY_USERNAME/" $DBPROXYFOLEDNAMESPACEFILE
+fi
+# -----------------------------------------------------------------------------
+# 设置 DBPROXY 密码
+# -----------------------------------------------------------------------------
+if [ ! -z "$DBPROXY_PASSWORD" ]; then
+    sed -i "s/MSHK_DBPROXY_PASSWORD/$DBPROXY_PASSWORD/" $DBPROXYFOLEDNAMESPACEFILE
+fi
+

@@ -1,0 +1,50 @@
+{
+    "name": "MSHK_DBNAME_namespace_shard",
+    "online": true,
+    "read_only": false,
+    "allowed_dbs": {
+        "MSHK_DBNAME": true
+    },
+    "slow_sql_time": "1000",
+    "black_sql": [],
+    "allowed_ip": [],
+    "slices": [
+        {
+            "name": "slice-0",
+            "user_name": "MSHK_USERNAME",
+            "password": "MSHK_PASSWORD",
+            "master": "MSHK_HOST:MSHK_PORT",
+            "slaves": [],
+            "statistic_slaves": [],
+            "capacity": 12,
+            "max_capacity": 24,
+            "idle_timeout": 60
+        }
+    ],
+    "shard_rules": [
+        {
+            "db": "MSHK_DBNAME",
+            "table": "users",
+            "type": "hash",
+            "key": "id",
+            "locations": [
+                2
+            ],
+            "slices": [
+                "slice-0"
+            ]
+        }
+    ],
+    "users": [
+        {
+            "user_name": "MSHK_DBPROXY_USERNAME",
+            "password": "MSHK_DBPROXY_PASSWORD",
+            "namespace": "MSHK_DBNAME_namespace_shard",
+            "rw_flag": 2,
+            "rw_split": 1,
+            "other_property": 0
+        }
+    ],
+    "default_slice": "slice-0",
+    "global_sequences": []
+}
