@@ -218,21 +218,20 @@ $ make clear
 
 ## swagger 文档查看
 
-官方文档：https://swagger.io/docs/specification/2-0/what-is-swagger/
+官方使用说明：https://swagger.io/docs/specification/2-0/what-is-swagger/
 
-编译：
+运行以下命令，然后浏览 http://localhost:18081 查看 API 文档，效果如下图：
 ```
+# 编译
 $ docker-compose build swagger
-```
-
-运行以下命令，然后浏览 http://localhost:18081 查看 API 文档
-```bash
 $ docker-compose up swagger
 ```
-> 可以看接口，不能进行测试，因为go-micro默认是不支持跨域的，如果需要跨域，需要重新编译micro，参考文章：https://github.com/micro/go-plugins/tree/master/micro/cors
+![mshk.top](https://img.mshk.top/MicroService-UserPowerManager9.png-2)
+> *可以看接口，不能进行测试，因为go-micro默认是不支持跨域的，如果需要跨域，需要重新编译micro，参考文章：https://github.com/micro/go-plugins/tree/master/micro/cors*
 
 
-运行 `swagger` 编辑器，浏览 http://localhost，可以看到效果
+如果要编辑 `swagger` ，可以使用下面的命令，打开 `swagger` 编辑器，浏览 http://localhost ，可以看到编辑器效果如下图：
 ```
 $ docker run -it --rm -p 80:8080 --name swagger-editor swaggerapi/swagger-editor
 ```
+![mshk.top](https://img.mshk.top/MicroService-UserPowerManager10.png-2)
